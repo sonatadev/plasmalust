@@ -1,0 +1,16 @@
+[SddmGreeterTheme]
+Name=Plasmalust
+Description=Wallust-synced login theme
+Author=sonata
+Copyright=(c) 2026, sonata
+License=MIT
+Type=sddm-theme
+Version=1.0
+Website=https://github.com/sonatadev/plasmalust
+Screenshot=screenshot.png
+MainScript=Main.qml
+ConfigFile=theme.conf
+TranslationsDirectory=translations
+Theme-Id=plasmalust
+Theme-API=2.0
+QtVersion=6
