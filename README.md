@@ -4,8 +4,11 @@ Generate a full-system color theme from your current wallpaper, on KDE Plasma.
 
 Run one command and your accent color, window decorations, GTK apps, terminal
 (kitty), prompt (starship), system monitor (btop), audio visualizer (cava),
-system info (fastfetch), and Spotify (via Spicetify) all repaint to match
-whatever wallpaper is currently active — no manual palette picking.
+system info (fastfetch), Spotify (via Spicetify), Discord (via Vesktop's
+Vencord), vim/neovim, mpv, `bat`, `fzf`, and the Zen browser all repaint to
+match whatever wallpaper is currently active — no manual palette picking.
+Optional (sudo-gated, not auto-applied) theming for GRUB and the SDDM login
+screen is included too — see [System-level extras](#system-level-extras-optional-sudo-required) below.
 
 ## How it works
 
@@ -19,6 +22,14 @@ whatever wallpaper is currently active — no manual palette picking.
 4. It pushes the new colors live into every open terminal, restarts
    `plasmashell` for a clean redraw, and — if Spotify is running — rebuilds
    and reloads the Spicetify theme too.
+5. It rebuilds `bat`'s theme cache so the new colors actually take effect
+   there (bat reads themes from a compiled cache, not the theme file
+   directly).
+
+Discord (Vesktop/Vencord) picks up the new Quick CSS live, no restart
+needed. vim/neovim, mpv, `fzf`, and the Zen browser pick theirs up on next
+launch (vim/mpv/fzf) or next browser restart (Zen) — none of these support
+true hot-reload the way kitty/Plasma do.
 
 ## What it themes
 
@@ -34,6 +45,14 @@ whatever wallpaper is currently active — no manual palette picking.
 | conky | `templates/conky-mocha.conf` |
 | fastfetch | `templates/fastfetch.jsonc` |
 | Spotify (via Spicetify) | `templates/spicetify-user.css` → derived `color.ini` |
+| Discord (via Vesktop/Vencord Quick CSS) | `templates/discord-vencord.css` |
+| vim / neovim | `templates/vim-colors.vim` |
+| mpv (OSD/subtitle colors) | `templates/mpv-colors.conf` |
+| `bat` | `templates/bat-wallust.tmTheme` |
+| `fzf` | `templates/fzf-colors.sh` |
+| Zen browser (userChrome.css) | `templates/zen-userchrome.css` |
+| GRUB (staged only, needs sudo to apply) | `templates/grub-theme.txt` |
+| SDDM login screen (staged only, needs sudo to apply) | `templates/sddm-theme.conf` |
 
 ## KDE quirks it works around
 
@@ -60,7 +79,8 @@ first one, turned out to be the hard part:
 - KDE Plasma (uses `kwriteconfig6`, `plasma-apply-colorscheme`, `kquitapp6`/`kstart`)
 - [`wallust`](https://codeberg.org/explosion-mental/wallust)
 - kitty (for the live terminal color push and accent-color derivation)
-- Optional: GTK3/4, starship, btop, cava, conky, fastfetch, [Spicetify](https://spicetify.app/) — only themed if installed/present
+- Optional: GTK3/4, starship, btop, cava, conky, fastfetch, [Spicetify](https://spicetify.app/),
+  Vesktop, vim/neovim, mpv, `bat`, `fzf`, Zen browser — only themed if installed/present
 
 ## Setup
 
@@ -76,6 +96,96 @@ first one, turned out to be the hard part:
    ```
 
 Re-run it any time you change your wallpaper.
+
+### Per-app notes
+
+- **vim/neovim**: copy `dotfiles/vimrc` to `~/.vimrc` and/or `dotfiles/nvim-init.vim`
+  to `~/.config/nvim/init.vim`. Both just source the generated
+  `~/.cache/wallust/wallust.vim`.
+- **mpv**: add the line from `dotfiles/mpv-conf-snippet.conf` to your
+  `mpv.conf` (this repo doesn't ship your whole `mpv.conf`, just that one
+  include line).
+- **`fzf`**: add `[ -f ~/.cache/wallust/fzf.sh ] && source ~/.cache/wallust/fzf.sh`
+  to your `.bashrc`/`.zshrc`.
+- **`bat`**: copy `dotfiles/bat-config` to `~/.config/bat/config` (or just add
+  `--theme="Wallust"` to your existing one). `set-theme` calls
+  `bat cache --build` automatically after every run.
+- **Discord (Vesktop)**: nothing to configure — Vesktop already ships with
+  Quick CSS enabled (`useQuickCss: true` in its settings), and the generated
+  CSS is written straight to `~/.config/vesktop/settings/quickCss.css`.
+- **Zen browser**: copy `dotfiles/zen-user.js` to your Zen profile directory
+  (find it via `about:profiles` in Zen, or `~/.config/zen/profiles.ini`) as
+  `user.js`. This flips `toolkit.legacyUserProfileCustomizations.stylesheets`
+  so `chrome/userChrome.css` gets loaded. Requires a browser restart to pick
+  up new colors — Firefox-family browsers only read `userChrome.css` at
+  startup.
+
+## System-level extras (optional, sudo required)
+
+GRUB and SDDM theming are **not applied automatically** by `set-theme` — it
+only stages the generated files under `~/.cache/wallust/`. Actually applying
+them touches root-owned system paths (`/usr/share/grub/`, `/usr/share/sddm/`,
+`/etc/sddm.conf.d/`), and a broken login screen or boot menu is a much worse
+day than a stale terminal theme. Treat these as a deliberate, occasional
+step you run yourself when you're around to verify it worked — not something
+`set-theme` should ever do unattended.
+
+### GRUB
+
+[`grub-theme/install-grub-theme.sh`](./grub-theme/install-grub-theme.sh) copies
+the staged, wallust-colored `theme.txt` over Garuda's `catppuccin-mocha` GRUB
+theme (only color values change - images/fonts/layout are untouched). It
+backs up the original `theme.txt` on first run. No `grub-mkconfig` needed,
+since the theme *path* isn't changing, only its contents.
+
+```sh
+sudo ./grub-theme/install-grub-theme.sh
+```
+
+A GRUB gfxmenu error normally just falls back to GRUB's plain text menu, not
+an unbootable system - but if you want to undo it anyway:
+
+```sh
+sudo cp /usr/share/grub/themes/catppuccin-mocha/theme.txt.orig \
+        /usr/share/grub/themes/catppuccin-mocha/theme.txt
+```
+
+### SDDM login screen
+
+[`sddm-theme/`](./sddm-theme/) is a minimal, dependency-free (plain
+QtQuick/QtQuick.Controls, no Plasma/Kirigami coupling) SDDM greeter theme
+that reads its colors from the wallust-generated `theme.conf`.
+
+**Test it first without touching your real login screen at all:**
+
+```sh
+sddm-greeter-qt6 --test-mode --theme sddm-theme/
+```
+
+(older SDDM builds may name the binary just `sddm-greeter`.) This opens the
+greeter in an ordinary window - your session keeps running, nothing
+system-wide changes. Only once you're happy with that preview, install it
+for real:
+
+```sh
+sudo ./sddm-theme/install-sddm.sh
+```
+
+This is a one-shot snapshot of whatever colors were staged at the time -
+SDDM runs as its own restricted system user and can't read your `~/.cache`,
+so the login screen doesn't update live the way your terminal does. Re-run
+the install script (with sudo) whenever you want to resync it after a
+wallpaper change.
+
+**Recovery**, if anything looks wrong after installing: switch to a TTY with
+`Ctrl+Alt+F3` (or F2/F4), log in there, and run:
+
+```sh
+sudo rm /etc/sddm.conf.d/plasmalust.conf
+sudo systemctl restart sddm
+```
+
+to instantly fall back to the default theme.
 
 ## License
 
