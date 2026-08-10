@@ -1,0 +1,125 @@
+#!/bin/bash
+
+# Find active wallpaper
+WALLPAPER=$(grep '^Image=' ~/.config/plasma-org.kde.plasma.desktop-appletsrc | tail -n 1 | cut -d'=' -f2-)
+WALLPAPER="${WALLPAPER#file://}"
+
+if [ -z "$WALLPAPER" ] || [ ! -f "$WALLPAPER" ]; then
+    WALLPAPER=$(grep -oE '/home/[^"]+\.(jpg|jpeg|png)' ~/.config/plasma-org.kde.plasma.desktop-appletsrc 2>/dev/null | tail -n 1)
+fi
+
+if [ -z "$WALLPAPER" ] || [ ! -f "$WALLPAPER" ]; then
+    echo "Error: Could not automatically detect active wallpaper path."
+    exit 1
+fi
+
+echo "Detected active wallpaper: $WALLPAPER"
+
+# 1. Run Wallust with --no-cache
+# This regenerates: the KDE color scheme (~/.local/share/color-schemes/Wallust.colors),
+# the kitty theme (~/.config/kitty/current-theme.conf), fastfetch config, and live
+# terminal OSC sequences (~/.cache/wallust/sequences) — per wallust.toml templates.
+wallust run --no-cache "$WALLPAPER" || exit 1
+
+# 2. Apply the freshly generated color scheme system-wide (Plasma + all Qt/KDE apps,
+# including Dolphin, inherit this automatically — no per-app step needed).
+# Stop Plasma's own "accent color from wallpaper" first so it doesn't fight wallust
+# and keep overwriting the scheme with its own auto-generated one.
+kwriteconfig6 --file kdeglobals --group General --key accentColorFromWallpaper false
+
+# Strip any literal Colors:* overrides that may have been left in kdeglobals by
+# Plasma's accent-color writer (or a previous run) — these shadow the ColorScheme
+# file's values for every app that reads kdeglobals directly (System Settings,
+# Dolphin, System Monitor, ...), freezing them on whatever palette was last written
+# even after the active scheme changes. kwriteconfig6 --delete only drops single
+# keys, not whole groups, so strip the blocks directly.
+KDEGLOBALS="$HOME/.config/kdeglobals"
+if [ -f "$KDEGLOBALS" ]; then
+    awk '
+        /^\[Colors:(Button|Complementary|Selection|Tooltip|View|Window)\]$/ { skip=1; next }
+        /^\[/ { skip=0 }
+        !skip
+    ' "$KDEGLOBALS" > "$KDEGLOBALS.tmp" && mv "$KDEGLOBALS.tmp" "$KDEGLOBALS"
+fi
+
+# Since accentColorFromWallpaper is off, nothing else keeps AccentColor in sync —
+# derive it ourselves from the same accent color GTK uses (color5), so the accent
+# highlight used across Plasma/System Settings matches the rest of the theme.
+ACCENT_HEX=$(grep -m1 '^color5' "$HOME/.config/kitty/theme.conf" | awk '{print $2}')
+if [ -n "$ACCENT_HEX" ]; then
+    ACCENT_RGB=$(printf '%d,%d,%d' "0x${ACCENT_HEX:1:2}" "0x${ACCENT_HEX:3:2}" "0x${ACCENT_HEX:5:2}")
+    kwriteconfig6 --file kdeglobals --group General --key AccentColor "$ACCENT_RGB"
+fi
+
+# plasma-apply-colorscheme silently no-ops if the scheme *name* it's asked to
+# apply is already the current one — it never inspects file content. Since our
+# KDE template always writes Name=Wallust, every run after the first was being
+# skipped, leaving KDE permanently frozen on whichever wallpaper's colors got
+# applied that first time. Work around it by applying under a fresh, unique
+# name each run, then pruning the old ones so they don't pile up.
+# Note: the old file is only removed *after* the new one is applied — kdeglobals
+# still references the old scheme name until plasma-apply-colorscheme rewrites
+# it, so deleting the old file first left a gap where that name pointed at
+# nothing and plasma-apply-colorscheme would warn "could not find" it and
+# transiently fall back to BreezeLight before applying the new one.
+SCHEME_DIR="$HOME/.local/share/color-schemes"
+SCHEME_NAME="Wallust-$(date +%s%N)"
+sed "s/^Name=Wallust$/Name=$SCHEME_NAME/" "$SCHEME_DIR/Wallust.colors" > "$SCHEME_DIR/$SCHEME_NAME.colors"
+plasma-apply-colorscheme "$SCHEME_NAME"
+find "$SCHEME_DIR" -maxdepth 1 -name 'Wallust-*.colors' ! -name "$SCHEME_NAME.colors" -delete
+
+# 3. Push the new colors to already-open terminals immediately, without waiting for
+# a new window (writes wallust's OSC sequences to every pty the user owns).
+SEQ_FILE="$HOME/.cache/wallust/sequences"
+if [ -f "$SEQ_FILE" ]; then
+    for pty in /dev/pts/*; do
+        [ -w "$pty" ] && cat "$SEQ_FILE" > "$pty" 2>/dev/null
+    done
+fi
+
+# 4. Restart Plasma shell once to force a full panel/widget redraw
+kquitapp6 plasmashell 2>/dev/null
+kstart plasmashell >/dev/null 2>&1 &
+
+# 5. Spicetify: wallust already regenerated Themes/wallust/user.css (--spice-* CSS vars,
+# per the [templates.spicetify] entry in wallust.toml). Also derive Themes/wallust/color.ini
+# from it (spicetify's replace_colors patcher wants hex-without-# key=value pairs, not CSS
+# vars) since there's no wallust template output in that format directly.
+SPICE_THEME_DIR="$HOME/.config/spicetify/Themes/wallust"
+if [ -f "$SPICE_THEME_DIR/user.css" ] && command -v spicetify >/dev/null; then
+    {
+        echo "[wallust]"
+        awk -F': ' '
+        /--spice-text:/{print "text               = " substr($2,2,6)}
+        /--spice-subtext:/{print "subtext            = " substr($2,2,6)}
+        /--spice-main:/{print "main               = " substr($2,2,6)}
+        /--spice-sidebar:/{print "sidebar            = " substr($2,2,6)}
+        /--spice-player:/{print "player             = " substr($2,2,6)}
+        /--spice-card:/{print "card               = " substr($2,2,6)}
+        /--spice-shadow:/{print "shadow             = " substr($2,2,6)}
+        /--spice-selected-row:/{print "selected-row       = " substr($2,2,6)}
+        /--spice-button:/{print "button             = " substr($2,2,6)}
+        /--spice-button-active:/{print "button-active      = " substr($2,2,6)}
+        /--spice-button-disabled:/{print "button-disabled    = " substr($2,2,6)}
+        /--spice-tab-active:/{print "tab-active         = " substr($2,2,6)}
+        /--spice-notification:/{print "notification       = " substr($2,2,6)}
+        /--spice-notification-error:/{print "notification-error = " substr($2,2,6)}
+        /--spice-misc:/{print "misc               = " substr($2,2,6)}
+        ' "$SPICE_THEME_DIR/user.css"
+    } > "$SPICE_THEME_DIR/color.ini"
+
+    # "refresh -s" just re-reads the active theme's color.ini/user.css/assets - much
+    # cheaper than "apply", which re-patches Spotify's whole app bundle from scratch.
+    spicetify refresh -s >/dev/null 2>&1
+
+    # Colors only show up after Spotify reloads its window - restart it, but only if it
+    # was already running, so this doesn't launch Spotify on every wallpaper change.
+    if pgrep -f "/opt/spotify/spotify" >/dev/null; then
+        pkill -f "/opt/spotify/spotify"
+        sleep 1
+        setsid /opt/spotify/spotify >/dev/null 2>&1 < /dev/null &
+        disown
+    fi
+fi
+
+echo "Theme successfully applied system-wide!"

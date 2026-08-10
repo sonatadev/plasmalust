@@ -1,0 +1,19 @@
+[General]
+ColorScheme=wallust
+Name=Wallust
+
+[Colors:Window]
+BackgroundNormal={{background | rgb}}
+ForegroundNormal={{foreground | rgb}}
+
+[Colors:View]
+BackgroundNormal={{background | rgb}}
+ForegroundNormal={{foreground | rgb}}
+
+[Colors:Button]
+BackgroundNormal={{color8 | rgb}}
+ForegroundNormal={{foreground | rgb}}
+
+[Colors:Selection]
+BackgroundNormal={{color4 | rgb}}
+ForegroundNormal={{background | rgb}}

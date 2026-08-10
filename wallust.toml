@@ -1,0 +1,44 @@
+backend = "resized"
+color_space = "lab"
+threshold = 20
+palette = "kmeans"
+
+[templates.kde]
+template = "Wallust.colors"
+target = "/home/YOUR_USERNAME/.local/share/color-schemes/Wallust.colors"
+
+[templates.kitty]
+template = "colors-kitty.conf"
+target = "/home/YOUR_USERNAME/.config/kitty/current-theme.conf"
+
+[templates.fastfetch]
+template = "fastfetch.jsonc"
+target = "/home/YOUR_USERNAME/.config/fastfetch/config.jsonc"
+
+[templates.starship]
+template = "starship.toml"
+target = "/home/YOUR_USERNAME/.config/starship.toml"
+
+[templates.gtk3]
+template = "gtk3-colors.css"
+target = "/home/YOUR_USERNAME/.config/gtk-3.0/gtk.css"
+
+[templates.gtk4]
+template = "gtk4-colors.css"
+target = "/home/YOUR_USERNAME/.config/gtk-4.0/gtk.css"
+
+[templates.cava]
+template = "cava-config"
+target = "/home/YOUR_USERNAME/.config/cava/config"
+
+[templates.conky]
+template = "conky-mocha.conf"
+target = "/home/YOUR_USERNAME/.config/conky/mocha.conf"
+
+[templates.btop]
+template = "btop-wallust.theme"
+target = "/home/YOUR_USERNAME/.config/btop/themes/wallust.theme"
+
+[templates.spicetify]
+template = "spicetify-user.css"
+target = "/home/YOUR_USERNAME/.config/spicetify/Themes/wallust/user.css"
