@@ -122,4 +122,12 @@ if [ -f "$SPICE_THEME_DIR/user.css" ] && command -v spicetify >/dev/null; then
     fi
 fi
 
+# 6. bat reads themes from a prebuilt binary cache, not the theme files
+# directly - rebuild it so the new Wallust.tmTheme colors actually take
+# effect (bat --theme=Wallust would otherwise silently keep the old cached
+# palette and warn "Unknown theme").
+if command -v bat >/dev/null; then
+    bat cache --build >/dev/null 2>&1
+fi
+
 echo "Theme successfully applied system-wide!"

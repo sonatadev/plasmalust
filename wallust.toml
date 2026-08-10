@@ -42,3 +42,35 @@ target = "/home/YOUR_USERNAME/.config/btop/themes/wallust.theme"
 [templates.spicetify]
 template = "spicetify-user.css"
 target = "/home/YOUR_USERNAME/.config/spicetify/Themes/wallust/user.css"
+
+[templates.vim]
+template = "vim-colors.vim"
+target = "/home/YOUR_USERNAME/.cache/wallust/wallust.vim"
+
+[templates.mpv]
+template = "mpv-colors.conf"
+target = "/home/YOUR_USERNAME/.config/mpv/colors.conf"
+
+[templates.discord]
+template = "discord-vencord.css"
+target = "/home/YOUR_USERNAME/.config/vesktop/settings/quickCss.css"
+
+[templates.zen]
+template = "zen-userchrome.css"
+target = "/home/YOUR_USERNAME/.config/zen/YOUR_PROFILE.Default (release)/chrome/userChrome.css"
+
+[templates.fzf]
+template = "fzf-colors.sh"
+target = "/home/YOUR_USERNAME/.cache/wallust/fzf.sh"
+
+[templates.bat]
+template = "bat-wallust.tmTheme"
+target = "/home/YOUR_USERNAME/.config/bat/themes/Wallust.tmTheme"
+
+[templates.grub]
+template = "grub-theme.txt"
+target = "/home/YOUR_USERNAME/.cache/wallust/grub-theme.txt"
+
+[templates.sddm]
+template = "sddm-theme.conf"
+target = "/home/YOUR_USERNAME/.cache/wallust/sddm-theme.conf"
