@@ -1,17 +1,14 @@
 #!/bin/bash
-# Applies the wallust-generated color values (and current wallpaper) to
-# Garuda's catppuccin-mocha GRUB theme. Requires root - run with sudo.
+# Applies the wallust-generated color values (and current wallpaper) as
+# their own independent GRUB theme, copied from Garuda's catppuccin-mocha
+# theme but living in a separate directory. Requires root - run with sudo.
 #
-# GRUB reads theme.txt directly at boot (the path is already set via
-# GRUB_THEME in /etc/default/grub), so no `grub-mkconfig` is needed.
-#
-# A GRUB gfxmenu error normally just falls back to GRUB's plain text menu,
-# not an unbootable system - but this script backs up the originals on
-# first run regardless, so it's trivially reversible:
-#   sudo cp /usr/share/grub/themes/catppuccin-mocha/theme.txt.orig \
-#           /usr/share/grub/themes/catppuccin-mocha/theme.txt
-#   sudo cp /usr/share/grub/themes/catppuccin-mocha/background.png.orig \
-#           /usr/share/grub/themes/catppuccin-mocha/background.png
+# Earlier versions of this script edited catppuccin-mocha's own theme.txt/
+# background.png in place - which meant every `pacman -Syu` that touched
+# that package silently reset them back to stock. Since GRUB_THEME's path
+# is what's baked into grub.cfg, not its contents, moving to an independent
+# plasmalust/ directory that no package owns means system updates can never
+# touch it again - no more re-running this after every update.
 
 set -euo pipefail
 
@@ -29,17 +26,21 @@ if [ ! -f "$STAGED" ]; then
     exit 1
 fi
 
-THEME_DIR=/usr/share/grub/themes/catppuccin-mocha
+SOURCE_DIR=/usr/share/grub/themes/catppuccin-mocha
+THEME_DIR=/usr/share/grub/themes/plasmalust
 THEME_TXT="$THEME_DIR/theme.txt"
 BACKGROUND="$THEME_DIR/background.png"
 
-if [ ! -f "$THEME_TXT.orig" ]; then
-    cp "$THEME_TXT" "$THEME_TXT.orig"
-    echo "Backed up original to $THEME_TXT.orig"
-fi
-if [ ! -f "$BACKGROUND.orig" ]; then
-    cp "$BACKGROUND" "$BACKGROUND.orig"
-    echo "Backed up original to $BACKGROUND.orig"
+mkdir -p "$THEME_DIR"
+
+# One-time copy of the static assets our theme.txt references by relative
+# filename (font, logo, selection-highlight pixmaps, icons) - these never
+# change, so only copy them if they're not already here.
+if [ ! -f "$THEME_DIR/logo.png" ]; then
+    cp "$SOURCE_DIR/logo.png" "$SOURCE_DIR/select_c.png" "$SOURCE_DIR/select_e.png" \
+       "$SOURCE_DIR/select_w.png" "$SOURCE_DIR/HackNerdMonoBold16.pf2" "$THEME_DIR/"
+    cp -r "$SOURCE_DIR/icons" "$THEME_DIR/"
+    echo "Copied static theme assets from $SOURCE_DIR"
 fi
 
 cp "$STAGED" "$THEME_TXT"
@@ -55,6 +56,16 @@ if [ -n "$WALLPAPER" ] && [ -f "$WALLPAPER" ] && command -v magick >/dev/null; t
     magick "$WALLPAPER" -resize 1920x1080^ -gravity center -extent 1920x1080 -colorize 35% "$BACKGROUND"
 else
     echo "Warning: could not update GRUB background image, keeping the existing one." >&2
+fi
+
+# Point GRUB_THEME at our independent directory (only if it isn't already),
+# and regenerate grub.cfg since this is a path change, not just a content
+# change - unlike re-running this script normally, which never needs
+# grub-mkconfig since the path stays the same.
+if ! grep -q "^GRUB_THEME=\"$THEME_TXT\"" /etc/default/grub; then
+    sed -i "s|^GRUB_THEME=.*|GRUB_THEME=\"$THEME_TXT\"|" /etc/default/grub
+    echo "Updated GRUB_THEME in /etc/default/grub, regenerating grub.cfg..."
+    grub-mkconfig -o /boot/grub/grub.cfg
 fi
 
 echo "GRUB theme updated. Changes show up on next boot."

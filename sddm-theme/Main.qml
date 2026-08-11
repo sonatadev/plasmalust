@@ -72,29 +72,29 @@ Rectangle {
 
     Rectangle {
         id: loginPanel
-        width: 340
-        height: loginColumn.implicitHeight + 48
-        radius: 16
+        width: 480
+        height: loginColumn.implicitHeight + 64
+        radius: 20
         anchors.centerIn: parent
         color: Qt.rgba(root.colorPanel.r, root.colorPanel.g, root.colorPanel.b, 0.85)
 
         ColumnLayout {
             id: loginColumn
             anchors.fill: parent
-            anchors.margins: 24
-            spacing: 14
+            anchors.margins: 32
+            spacing: 18
 
             Rectangle {
                 Layout.alignment: Qt.AlignHCenter
-                width: 72
-                height: 72
-                radius: 36
+                width: 100
+                height: 100
+                radius: 50
                 color: root.colorAccent
 
                 Text {
                     anchors.centerIn: parent
                     text: userCombo.currentText.length > 0 ? userCombo.currentText.charAt(0).toUpperCase() : "?"
-                    font.pixelSize: 28
+                    font.pixelSize: 38
                     color: root.colorPanel
                 }
             }
@@ -102,13 +102,13 @@ Rectangle {
             ComboBox {
                 id: userCombo
                 Layout.fillWidth: true
-                height: 40
+                height: 52
                 model: userModel
                 textRole: "name"
                 currentIndex: userModel.lastIndex >= 0 ? userModel.lastIndex : 0
 
                 background: Rectangle {
-                    radius: 8
+                    radius: 10
                     color: root.fieldBackground
                     border.color: root.fieldBorder
                     border.width: 1
@@ -116,23 +116,26 @@ Rectangle {
                 contentItem: Text {
                     text: userCombo.displayText
                     color: root.colorPrimary
-                    font.pixelSize: 14
-                    leftPadding: 12
+                    font.pixelSize: 17
+                    leftPadding: 16
                     verticalAlignment: Text.AlignVCenter
                 }
                 indicator: Text {
-                    x: userCombo.width - width - 12
+                    x: userCombo.width - width - 16
                     y: (userCombo.height - height) / 2
                     text: "▾"
+                    font.pixelSize: 16
                     color: root.colorPrimary
                 }
                 delegate: ItemDelegate {
                     width: userCombo.width
+                    height: 44
                     highlighted: userCombo.highlightedIndex === index
                     contentItem: Text {
                         text: name
                         color: root.colorPrimary
-                        leftPadding: 12
+                        font.pixelSize: 16
+                        leftPadding: 16
                         verticalAlignment: Text.AlignVCenter
                     }
                     background: Rectangle {
@@ -146,7 +149,7 @@ Rectangle {
                     implicitHeight: contentItem.implicitHeight + 8
 
                     background: Rectangle {
-                        radius: 8
+                        radius: 10
                         color: root.colorPanel
                         border.color: root.fieldBorder
                         border.width: 1
@@ -163,18 +166,19 @@ Rectangle {
             TextField {
                 id: passwordField
                 Layout.fillWidth: true
-                height: 40
+                height: 52
+                font.pixelSize: 17
                 echoMode: TextInput.Password
                 placeholderText: "Password"
                 placeholderTextColor: Qt.rgba(root.colorPrimary.r, root.colorPrimary.g, root.colorPrimary.b, 0.5)
                 color: root.colorPrimary
-                leftPadding: 12
-                rightPadding: 12
+                leftPadding: 16
+                rightPadding: 16
                 focus: true
                 onAccepted: sddm.login(userCombo.currentText, passwordField.text, sessionCombo.currentIndex)
 
                 background: Rectangle {
-                    radius: 8
+                    radius: 10
                     color: root.fieldBackground
                     border.color: root.fieldBorder
                     border.width: 1
@@ -185,6 +189,7 @@ Rectangle {
                 id: errorText
                 Layout.fillWidth: true
                 color: root.colorError
+                font.pixelSize: 15
                 visible: text.length > 0
                 wrapMode: Text.WordWrap
             }
@@ -195,13 +200,13 @@ Rectangle {
                 ComboBox {
                     id: sessionCombo
                     Layout.fillWidth: true
-                    height: 40
+                    height: 48
                     model: sessionModel
                     textRole: "name"
                     currentIndex: sessionModel.lastIndex >= 0 ? sessionModel.lastIndex : 0
 
                     background: Rectangle {
-                        radius: 8
+                        radius: 10
                         color: root.fieldBackground
                         border.color: root.fieldBorder
                         border.width: 1
@@ -209,23 +214,26 @@ Rectangle {
                     contentItem: Text {
                         text: sessionCombo.displayText
                         color: root.colorPrimary
-                        font.pixelSize: 13
-                        leftPadding: 10
+                        font.pixelSize: 15
+                        leftPadding: 14
                         verticalAlignment: Text.AlignVCenter
                     }
                     indicator: Text {
-                        x: sessionCombo.width - width - 10
+                        x: sessionCombo.width - width - 14
                         y: (sessionCombo.height - height) / 2
                         text: "▾"
+                        font.pixelSize: 15
                         color: root.colorPrimary
                     }
                     delegate: ItemDelegate {
                         width: sessionCombo.width
+                        height: 40
                         highlighted: sessionCombo.highlightedIndex === index
                         contentItem: Text {
                             text: name
                             color: root.colorPrimary
-                            leftPadding: 10
+                            font.pixelSize: 15
+                            leftPadding: 14
                             verticalAlignment: Text.AlignVCenter
                         }
                         background: Rectangle {
@@ -239,7 +247,7 @@ Rectangle {
                         implicitHeight: contentItem.implicitHeight + 8
 
                         background: Rectangle {
-                            radius: 8
+                            radius: 10
                             color: root.colorPanel
                             border.color: root.fieldBorder
                             border.width: 1
@@ -256,36 +264,41 @@ Rectangle {
                 Button {
                     id: loginButton
                     text: "Login"
+                    height: 48
                     onClicked: sddm.login(userCombo.currentText, passwordField.text, sessionCombo.currentIndex)
 
                     background: Rectangle {
-                        radius: 8
+                        radius: 10
                         color: loginButton.down ? Qt.darker(root.colorAccent, 1.2) : root.colorAccent
                     }
                     contentItem: Text {
                         text: loginButton.text
                         color: root.colorPanel
+                        font.pixelSize: 16
                         font.bold: true
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
+                        leftPadding: 8
+                        rightPadding: 8
                     }
                 }
             }
 
             RowLayout {
                 Layout.fillWidth: true
-                Layout.topMargin: 6
+                Layout.topMargin: 8
                 Layout.alignment: Qt.AlignHCenter
-                spacing: 12
+                spacing: 16
 
                 Button {
                     id: rebootButton
                     text: "Reboot"
+                    height: 44
                     visible: sddm.canReboot
                     onClicked: sddm.reboot()
 
                     background: Rectangle {
-                        radius: 8
+                        radius: 10
                         color: rebootButton.down ? root.fieldBorder : root.fieldBackground
                         border.color: root.fieldBorder
                         border.width: 1
@@ -293,18 +306,22 @@ Rectangle {
                     contentItem: Text {
                         text: rebootButton.text
                         color: root.colorPrimary
+                        font.pixelSize: 15
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
+                        leftPadding: 8
+                        rightPadding: 8
                     }
                 }
                 Button {
                     id: shutdownButton
                     text: "Shutdown"
+                    height: 44
                     visible: sddm.canPowerOff
                     onClicked: sddm.powerOff()
 
                     background: Rectangle {
-                        radius: 8
+                        radius: 10
                         color: shutdownButton.down ? root.fieldBorder : root.fieldBackground
                         border.color: root.fieldBorder
                         border.width: 1
@@ -312,8 +329,11 @@ Rectangle {
                     contentItem: Text {
                         text: shutdownButton.text
                         color: root.colorPrimary
+                        font.pixelSize: 15
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
+                        leftPadding: 8
+                        rightPadding: 8
                     }
                 }
             }
