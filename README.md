@@ -159,12 +159,21 @@ that reads its colors from the wallust-generated `theme.conf`.
 **Test it first without touching your real login screen at all:**
 
 ```sh
-sddm-greeter-qt6 --test-mode --theme sddm-theme/
+./sddm-theme/preview-sddm.sh
 ```
 
-(older SDDM builds may name the binary just `sddm-greeter`.) This opens the
-greeter in an ordinary window - your session keeps running, nothing
-system-wide changes. Only once you're happy with that preview, install it
+This stages the currently-generated `theme.conf` and wallpaper into
+`sddm-theme/` (both gitignored - not committed) and opens the greeter in an
+ordinary window via SDDM's `--test-mode`, with your actual wallust colors
+and background. Your session keeps running, nothing system-wide changes.
+
+Running SDDM's test-mode directly (`sddm-greeter-qt6 --test-mode --theme
+sddm-theme/`, or just `sddm-greeter` on older builds) works too, but without
+`theme.conf`/`background.png` present it silently falls back to the
+hardcoded defaults in `Main.qml` - flat near-black, no image - which looks
+like a theme bug but isn't; it's just an incomplete preview.
+
+Only once you're happy with what `preview-sddm.sh` showed you, install it
 for real:
 
 ```sh
