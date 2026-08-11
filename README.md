@@ -53,6 +53,7 @@ true hot-reload the way kitty/Plasma do.
 | mpv (OSD/subtitle colors) | `templates/mpv-colors.conf` |
 | `bat` | `templates/bat-wallust.tmTheme` |
 | `fzf` | `templates/fzf-colors.sh` |
+| `eza` | `templates/eza-colors.sh` |
 | Zen browser (userChrome.css) | `templates/zen-userchrome.css` |
 | GRUB (staged only, needs sudo to apply) | `templates/grub-theme.txt` |
 | SDDM login screen (staged only, needs sudo to apply) | `templates/sddm-theme.conf` |
@@ -108,7 +109,7 @@ Re-run it any time you change your wallpaper.
 - **mpv**: add the line from `dotfiles/mpv-conf-snippet.conf` to your
   `mpv.conf` (this repo doesn't ship your whole `mpv.conf`, just that one
   include line).
-- **`fzf`**: add `[ -f ~/.cache/wallust/fzf.sh ] && source ~/.cache/wallust/fzf.sh`
+- **`fzf`** / **`eza`**: add the two lines from `dotfiles/bashrc-fzf-eza-snippet.sh`
   to your `.bashrc`/`.zshrc`.
 - **`bat`**: copy `dotfiles/bat-config` to `~/.config/bat/config` (or just add
   `--theme="Wallust"` to your existing one). `set-theme` calls
