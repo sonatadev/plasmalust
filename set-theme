@@ -139,18 +139,31 @@ if command -v bat >/dev/null; then
     bat cache --build >/dev/null 2>&1
 fi
 
-# 7. GRUB + SDDM theming touch root-owned system paths (/usr/share/grub,
-# /usr/share/sddm, /etc/sddm.conf.d), so they need sudo - prompted for
-# upfront in step 0. Non-fatal: if sudo was declined/failed, everything
-# above (the actual desktop) has already been applied successfully either
-# way. The sudo -v here is just a refresh in case a slow run let the
-# credential cache from step 0 expire - normally a silent no-op.
-if [ -x "$PLASMALUST_REPO/grub-theme/install-grub-theme.sh" ] && [ -x "$PLASMALUST_REPO/sddm-theme/install-sddm.sh" ]; then
+# 7. GRUB + login-manager theming touch root-owned system paths, so they
+# need sudo - prompted for upfront in step 0. Non-fatal: if sudo was
+# declined/failed, everything above (the actual desktop) has already been
+# applied successfully either way. The sudo -v here is just a refresh in
+# case a slow run let the credential cache from step 0 expire - normally a
+# silent no-op.
+#
+# The login manager script is picked by checking which one is actually the
+# active display-manager.service, not assumed - SDDM and plasmalogin need
+# very different theming approaches (SDDM: a QML greeter theme. plasmalogin:
+# syncing its own isolated system-user config), and guessing wrong means
+# silently theming a display manager that was never even running.
+LOGIN_MANAGER=$(basename "$(readlink -f /etc/systemd/system/display-manager.service 2>/dev/null)" .service)
+case "$LOGIN_MANAGER" in
+    sddm)    LOGIN_INSTALLER="$PLASMALUST_REPO/sddm-theme/install-sddm.sh" ;;
+    plasmalogin) LOGIN_INSTALLER="$PLASMALUST_REPO/plasmalogin/install-plasmalogin.sh" ;;
+    *) LOGIN_INSTALLER="" ;;
+esac
+
+if [ -x "$PLASMALUST_REPO/grub-theme/install-grub-theme.sh" ] && [ -n "$LOGIN_INSTALLER" ] && [ -x "$LOGIN_INSTALLER" ]; then
     if sudo -v; then
         sudo "$PLASMALUST_REPO/grub-theme/install-grub-theme.sh"
-        sudo "$PLASMALUST_REPO/sddm-theme/install-sddm.sh"
+        sudo "$LOGIN_INSTALLER"
     else
-        echo "Skipping GRUB/SDDM (sudo not available) - desktop theme is still fully applied."
+        echo "Skipping GRUB/login manager (sudo not available) - desktop theme is still fully applied."
     fi
 fi
 

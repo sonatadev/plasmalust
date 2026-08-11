@@ -7,8 +7,14 @@ Run one command and your accent color, window decorations, GTK apps, terminal
 system info (fastfetch), Spotify (via Spicetify), Discord (via Vesktop's
 Vencord), vim/neovim, mpv, `bat`, `fzf`, and the Zen browser all repaint to
 match whatever wallpaper is currently active — no manual palette picking.
-Optional (sudo-gated, not auto-applied) theming for GRUB and the SDDM login
-screen is included too — see [System-level extras](#system-level-extras-optional-sudo-required) below.
+GRUB and login-screen theming are included too (sudo-gated, applied
+automatically by `set-theme`) — see
+[System-level extras](#system-level-extras-optional-sudo-required) below.
+The login screen part auto-detects whether your system actually runs SDDM
+or KDE's newer `plasmalogin` and themes whichever one is the real active
+`display-manager.service` — themeing the wrong one silently does nothing,
+which is exactly the mistake this repo made at first (see the SDDM section
+below).
 
 ## How it works
 
@@ -25,7 +31,8 @@ screen is included too — see [System-level extras](#system-level-extras-option
 5. It rebuilds `bat`'s theme cache so the new colors actually take effect
    there (bat reads themes from a compiled cache, not the theme file
    directly).
-6. It applies the GRUB and SDDM themes too, via `sudo` - see
+6. It applies the GRUB theme and whichever login manager (SDDM or
+   plasmalogin) is actually active, via `sudo` - see
    [System-level extras](#system-level-extras-optional-sudo-required)
    below for what that actually does and how to opt out.
 
@@ -55,8 +62,9 @@ true hot-reload the way kitty/Plasma do.
 | `fzf` | `templates/fzf-colors.sh` |
 | `eza` | `templates/eza-colors.sh` |
 | Zen browser (userChrome.css) | `templates/zen-userchrome.css` |
-| GRUB (staged only, needs sudo to apply) | `templates/grub-theme.txt` |
-| SDDM login screen (staged only, needs sudo to apply) | `templates/sddm-theme.conf` |
+| GRUB (needs sudo to apply) | `templates/grub-theme.txt` |
+| SDDM login screen, if active (needs sudo to apply) | `templates/sddm-theme.conf` |
+| plasmalogin login screen, if active (needs sudo to apply) | see `plasmalogin/install-plasmalogin.sh` |
 
 ## KDE quirks it works around
 
@@ -126,25 +134,38 @@ Re-run it any time you change your wallpaper.
 
 ## System-level extras (optional, sudo required)
 
-GRUB and SDDM theming touch root-owned system paths (`/usr/share/grub/`,
-`/usr/share/sddm/`, `/etc/sddm.conf.d/`). `set-theme` applies both
-automatically at the end of every run, via `sudo` (one password prompt
-covers both - `sudo -v` up front caches it). If sudo is declined or
-unavailable, this step is skipped and everything else in the run - the
-actual desktop theme - is unaffected; it already finished before this
-point.
+GRUB and login-screen theming touch root-owned system paths. `set-theme`
+applies both automatically at the end of every run, via `sudo` (one
+password prompt covers both - `sudo -v` up front caches it). If sudo is
+declined or unavailable, this step is skipped and everything else in the
+run - the actual desktop theme - is unaffected; it already finished before
+this point.
 
 This assumes the repo lives at `~/Projects/plasmalust` (see the
 `PLASMALUST_REPO` line near the bottom of `set-theme`) - adjust that path if
 you clone it somewhere else, or delete that whole block if you'd rather keep
-GRUB/SDDM as a manual, occasional step instead (see below for running them
-by hand).
+these as a manual, occasional step instead (see below for running them by
+hand).
 
 A broken login screen or boot menu is a worse day than a stale terminal
-theme, so both install scripts are conservative: GRUB only changes color
-values (never touches `grub-mkconfig` or the boot path) and backs up the
-original on first run; SDDM comes with a documented TTY recovery path
-(below) if anything looks wrong.
+theme, so every install script here is conservative: GRUB only changes
+color values (never touches `grub-mkconfig` or the boot path) and backs up
+the original on first run.
+
+### Which login manager?
+
+**Check which one is actually running before assuming anything** -
+`systemctl status sddm` showing `disabled`/`inactive` while a theme still
+doesn't seem to apply is a strong sign you're theming the wrong one. Find
+the real active one with:
+
+```sh
+basename "$(readlink -f /etc/systemd/system/display-manager.service)" .service
+```
+
+`set-theme` runs this same check itself and calls the matching install
+script below - you shouldn't normally need to run either manually unless
+you're testing.
 
 ### GRUB
 
@@ -158,6 +179,13 @@ since the theme *path* isn't changing, only its contents.
 sudo ./grub-theme/install-grub-theme.sh
 ```
 
+Note: `desktop-image` is deliberately not set in the template. GRUB draws
+that image *over* `desktop-color` - if an image is set, the color is only
+ever a fallback for when the image fails to load, so it's invisible
+regardless of its value. The theme's original static background picture
+never gets touched or regenerated; dropping the image line is what actually
+makes `desktop-color` (the real wallust palette) the visible background.
+
 A GRUB gfxmenu error normally just falls back to GRUB's plain text menu, not
 an unbootable system - but if you want to undo it anyway:
 
@@ -165,6 +193,28 @@ an unbootable system - but if you want to undo it anyway:
 sudo cp /usr/share/grub/themes/catppuccin-mocha/theme.txt.orig \
         /usr/share/grub/themes/catppuccin-mocha/theme.txt
 ```
+
+### plasmalogin login screen
+
+KDE's newer native greeter, used instead of SDDM on some current Plasma
+setups (this repo's own dev machine included). It runs as its own
+restricted system user (`plasmalogin`, home `/var/lib/plasmalogin`) with a
+config entirely separate from your own `~/.config` - your desktop's color
+scheme doesn't reach it on its own.
+
+[`plasmalogin/install-plasmalogin.sh`](./plasmalogin/install-plasmalogin.sh)
+copies the current wallpaper and the most recently generated
+`Wallust-*.colors` scheme into plasmalogin's own home, and points its own
+`kdeglobals` at that scheme:
+
+```sh
+sudo ./plasmalogin/install-plasmalogin.sh
+```
+
+Takes effect on next logout (no reboot needed - just log out and look at
+the greeter). No live preview mode exists for this one; if something looks
+wrong, `/etc/plasmalogin.conf` and `/var/lib/plasmalogin/.config/kdeglobals`
+are both plain text and safe to hand-edit or revert.
 
 ### SDDM login screen
 
