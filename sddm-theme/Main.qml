@@ -1,7 +1,6 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import QtQuick.Effects
 
 Rectangle {
     id: root
@@ -15,21 +14,10 @@ Rectangle {
     property color colorError: config.errorColor ? config.errorColor : "#F38BA8"
 
     Image {
-        id: bgImage
         anchors.fill: parent
         source: config.background ? config.background : ""
         fillMode: Image.PreserveAspectCrop
-        visible: false
-    }
-
-    MultiEffect {
-        anchors.fill: bgImage
-        source: bgImage
-        visible: bgImage.source !== ""
-        blurEnabled: true
-        blur: 0.15
-        blurMax: 16
-        autoPaddingEnabled: false
+        visible: source !== ""
     }
 
     Rectangle {
