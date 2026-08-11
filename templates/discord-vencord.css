@@ -2,67 +2,71 @@
  * Loaded via Vesktop's Quick CSS (settings/quickCss.css), which Vencord
  * hot-reloads on save - no Discord restart needed.
  *
- * The --background-primary/--text-normal/etc names below are LEGACY -
- * Discord migrated to a new design-token scheme (--background-base-*,
- * --background-mod-*, --text-default, --brand-500, ...) and the old names
- * no longer exist in the client, so they silently did nothing. Confirmed
- * by grepping the actual shipped CSS at
- * ~/.config/vesktop/sessionData/vencordFiles/vencordDesktopRenderer.css
- * (only Vencord's own injected UI, not Discord's full app CSS - there may
- * be more tokens elsewhere Discord's own surfaces use that aren't covered
- * here). Kept the legacy names too as harmless no-op insurance in case
- * some older surface still reads them.
+ * THE ACTUAL BUG (two previous attempts both missed this): Discord scopes
+ * its current-generation theme variables under `.visual-refresh.theme-dark`
+ * (a compound two-class selector), not `:root`. `:root` has lower
+ * specificity, so even `!important` there lost to Discord's own rule on
+ * the more specific selector - !important vs !important ties are broken by
+ * specificity, not just source order. Confirmed against the actively
+ * maintained catppuccin/discord theme's source (which has to track
+ * Discord's real internals to keep working):
+ * https://github.com/catppuccin/discord/blob/main/src/catppuccin-mocha.theme.scss
+ * Targeting the same selector here matches Discord's own specificity, and
+ * since QuickCSS loads after Discord's stylesheet, source order then
+ * breaks the tie in our favor. Also included on :root as a floor, and on
+ * .theme-light for when/if light mode is ever used.
  *
  * --background-feedback-* and --text-feedback-critical are intentionally
  * NOT overridden - they're semantic status colors (error/warning/info/
  * success) and overriding them with the wallust palette would make error
  * states indistinguishable from normal UI.
- *
- * !important on every property: Discord's own client CSS sets these same
- * custom properties on :root too, so without !important our overrides
- * silently lose regardless of load order.
  */
-:root {
-  /* current token scheme */
+:root,
+.visual-refresh.theme-dark,
+.visual-refresh .theme-dark,
+.visual-refresh.theme-light,
+.visual-refresh .theme-light {
   --background-base-lowest: {{background}} !important;
-  --background-base-low: {{color0}} !important;
   --background-base-lower: {{color0}} !important;
+  --background-base-low: {{color0}} !important;
+  --background-surface-high: {{color0}} !important;
+  --background-surface-higher: {{color8}} !important;
+  --background-surface-highest: {{color8}} !important;
+  --background-secondary-alt: {{color0}} !important;
+  --background-accent: {{color4}} !important;
   --background-mod-subtle: {{color0}} !important;
   --background-mod-normal: {{color8}} !important;
   --background-mod-strong: {{color8}} !important;
-  --background-modifier-hover: {{color8}} !important;
+  --app-frame-background: {{background}} !important;
+  --chat-background: {{background}} !important;
+  --chat-background-default: {{background}} !important;
+  --modal-background: {{color0}} !important;
+  --modal-footer-background: {{color0}} !important;
+  --card-background-default: {{color0}} !important;
+  --input-background-default: {{color0}} !important;
+  --channeltextarea-background: {{color0}} !important;
 
   --text-default: {{foreground}} !important;
   --text-strong: {{foreground}} !important;
-  --text-muted: {{color8}} !important;
+  --text-muted: {{color7}} !important;
+  --text-subtle: {{color7}} !important;
   --text-link: {{color4}} !important;
   --text-brand: {{color4}} !important;
+  --channels-default: {{color7}} !important;
+  --channel-icon: {{color7}} !important;
+  --input-text-default: {{foreground}} !important;
 
-  --interactive-hover: {{foreground}} !important;
-  --interactive-muted: {{color8}} !important;
-  --interactive-icon-default: {{color7}} !important;
+  --interactive-icon-default: {{foreground}} !important;
   --interactive-icon-hover: {{foreground}} !important;
   --interactive-icon-active: {{foreground}} !important;
+  --interactive-text-default: {{foreground}} !important;
+  --interactive-text-hover: {{foreground}} !important;
+  --interactive-text-active: {{foreground}} !important;
+  --interactive-muted: {{color8}} !important;
+  --icon-default: {{foreground}} !important;
+  --icon-muted: {{color7}} !important;
 
   --brand-500: {{color4}} !important;
-
-  /* legacy token scheme - kept as harmless no-op insurance */
-  --background-primary: {{background}} !important;
-  --background-secondary: {{color0}} !important;
-  --background-secondary-alt: {{color0}} !important;
-  --background-tertiary: {{background}} !important;
-  --background-accent: {{color4}} !important;
-  --background-floating: {{color0}} !important;
-  --background-mobile-primary: {{background}} !important;
-  --background-mobile-secondary: {{color0}} !important;
-  --channeltextarea-background: {{color0}} !important;
-  --text-normal: {{foreground}} !important;
-  --header-primary: {{foreground}} !important;
-  --header-secondary: {{color7}} !important;
-  --interactive-normal: {{color7}} !important;
-  --interactive-active: {{foreground}} !important;
-  --brand-experiment: {{color4}} !important;
-  --brand-experiment-560: {{color4}} !important;
   --scrollbar-thin-thumb: {{color8}} !important;
   --scrollbar-auto-thumb: {{color8}} !important;
   --scrollbar-auto-track: {{background}} !important;
