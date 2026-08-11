@@ -34,13 +34,22 @@ BACKGROUND="$THEME_DIR/background.png"
 mkdir -p "$THEME_DIR"
 
 # One-time copy of the static assets our theme.txt references by relative
-# filename (font, logo, selection-highlight pixmaps, icons) - these never
-# change, so only copy them if they're not already here.
-if [ ! -f "$THEME_DIR/logo.png" ]; then
-    cp "$SOURCE_DIR/logo.png" "$SOURCE_DIR/select_c.png" "$SOURCE_DIR/select_e.png" \
+# filename (font, selection-highlight pixmaps, icons) - these never change,
+# so only copy them if they're not already here.
+if [ ! -f "$THEME_DIR/HackNerdMonoBold16.pf2" ]; then
+    cp "$SOURCE_DIR/select_c.png" "$SOURCE_DIR/select_e.png" \
        "$SOURCE_DIR/select_w.png" "$SOURCE_DIR/HackNerdMonoBold16.pf2" "$THEME_DIR/"
     cp -r "$SOURCE_DIR/icons" "$THEME_DIR/"
     echo "Copied static theme assets from $SOURCE_DIR"
+fi
+
+# Logo: use the plain Arch Linux logo instead of Garuda's bird - re-copied
+# every run (cheap) rather than one-time, so it also fixes any already-
+# deployed install without needing a re-run of the one-time block above.
+if [ -f /usr/share/pixmaps/archlinux-logo.png ]; then
+    cp /usr/share/pixmaps/archlinux-logo.png "$THEME_DIR/logo.png"
+else
+    cp "$SOURCE_DIR/logo.png" "$THEME_DIR/logo.png"
 fi
 
 cp "$STAGED" "$THEME_TXT"
