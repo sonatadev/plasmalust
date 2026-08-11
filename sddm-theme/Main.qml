@@ -1,11 +1,15 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import QtQuick.Window
 
 Rectangle {
     id: root
-    width: 1920
-    height: 1080
+    // Bound to the actual screen size instead of a hardcoded 1920x1080 -
+    // a fixed size that doesn't match the real window/screen gets scaled
+    // to fit, which is what caused the "zoomed in" look.
+    width: Screen.width
+    height: Screen.height
     color: config.backgroundColor ? config.backgroundColor : "#151311"
 
     property color colorPrimary: config.primaryColor ? config.primaryColor : "#EBD4BD"
