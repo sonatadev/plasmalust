@@ -37,12 +37,22 @@ fi
 WALLPAPER_DIR="$PL_HOME/wallpapers"
 mkdir -p "$WALLPAPER_DIR"
 DEST_WALLPAPER="$WALLPAPER_DIR/wallust.${WALLPAPER##*.}"
-cp "$WALLPAPER" "$DEST_WALLPAPER"
+
+# Darken the greeter's copy only - never touches the real desktop wallpaper.
+# org.kde.image (the plugin plasmalogin uses) has no built-in dim/darkness
+# property, just Blur and a fallback Color, so this is done to the image
+# itself instead.
+if command -v magick >/dev/null; then
+    magick "$WALLPAPER" -colorize 35% "$DEST_WALLPAPER"
+else
+    cp "$WALLPAPER" "$DEST_WALLPAPER"
+fi
 
 mkdir -p /etc
 cat > /etc/plasmalogin.conf << EOF
 [Greeter][Wallpaper][org.kde.image][General]
 Image=file://$DEST_WALLPAPER
+Blur=false
 EOF
 
 # Color scheme - copy the most recently generated Wallust-*.colors from the
