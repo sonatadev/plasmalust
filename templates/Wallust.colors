@@ -4,16 +4,84 @@ Name=Wallust
 
 [Colors:Window]
 BackgroundNormal={{background | rgb}}
+BackgroundAlternate={{color0 | rgb}}
 ForegroundNormal={{foreground | rgb}}
+ForegroundInactive={{color7 | rgb}}
+ForegroundActive={{foreground | rgb}}
+ForegroundLink={{color4 | rgb}}
+ForegroundVisited={{color5 | rgb}}
+ForegroundNegative={{color1 | rgb}}
+ForegroundNeutral={{color3 | rgb}}
+ForegroundPositive={{color2 | rgb}}
+DecorationFocus={{color4 | rgb}}
+DecorationHover={{color6 | rgb}}
 
 [Colors:View]
 BackgroundNormal={{background | rgb}}
+BackgroundAlternate={{color0 | rgb}}
 ForegroundNormal={{foreground | rgb}}
+ForegroundInactive={{color7 | rgb}}
+ForegroundActive={{foreground | rgb}}
+ForegroundLink={{color4 | rgb}}
+ForegroundVisited={{color5 | rgb}}
+ForegroundNegative={{color1 | rgb}}
+ForegroundNeutral={{color3 | rgb}}
+ForegroundPositive={{color2 | rgb}}
+DecorationFocus={{color4 | rgb}}
+DecorationHover={{color6 | rgb}}
 
 [Colors:Button]
 BackgroundNormal={{color8 | rgb}}
+BackgroundAlternate={{color0 | rgb}}
 ForegroundNormal={{foreground | rgb}}
+ForegroundInactive={{color7 | rgb}}
+ForegroundActive={{foreground | rgb}}
+ForegroundLink={{color4 | rgb}}
+ForegroundVisited={{color5 | rgb}}
+ForegroundNegative={{color1 | rgb}}
+ForegroundNeutral={{color3 | rgb}}
+ForegroundPositive={{color2 | rgb}}
+DecorationFocus={{color4 | rgb}}
+DecorationHover={{color6 | rgb}}
 
 [Colors:Selection]
 BackgroundNormal={{color4 | rgb}}
+BackgroundAlternate={{color5 | rgb}}
 ForegroundNormal={{background | rgb}}
+ForegroundInactive={{color0 | rgb}}
+ForegroundActive={{background | rgb}}
+ForegroundLink={{background | rgb}}
+ForegroundVisited={{background | rgb}}
+ForegroundNegative={{color1 | rgb}}
+ForegroundNeutral={{color3 | rgb}}
+ForegroundPositive={{color2 | rgb}}
+DecorationFocus={{color4 | rgb}}
+DecorationHover={{color6 | rgb}}
+
+[Colors:Tooltip]
+BackgroundNormal={{color0 | rgb}}
+BackgroundAlternate={{background | rgb}}
+ForegroundNormal={{foreground | rgb}}
+ForegroundInactive={{color7 | rgb}}
+ForegroundActive={{foreground | rgb}}
+ForegroundLink={{color4 | rgb}}
+ForegroundVisited={{color5 | rgb}}
+ForegroundNegative={{color1 | rgb}}
+ForegroundNeutral={{color3 | rgb}}
+ForegroundPositive={{color2 | rgb}}
+DecorationFocus={{color4 | rgb}}
+DecorationHover={{color6 | rgb}}
+
+[Colors:Complementary]
+BackgroundNormal={{background | rgb}}
+BackgroundAlternate={{color0 | rgb}}
+ForegroundNormal={{foreground | rgb}}
+ForegroundInactive={{color7 | rgb}}
+ForegroundActive={{foreground | rgb}}
+ForegroundLink={{color4 | rgb}}
+ForegroundVisited={{color5 | rgb}}
+ForegroundNegative={{color1 | rgb}}
+ForegroundNeutral={{color3 | rgb}}
+ForegroundPositive={{color2 | rgb}}
+DecorationFocus={{color4 | rgb}}
+DecorationHover={{color6 | rgb}}
