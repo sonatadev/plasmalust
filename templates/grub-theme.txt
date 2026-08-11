@@ -8,10 +8,15 @@
 # install-grub-theme.sh in the plasmalust repo to apply it.
 
 # Global Property
+# desktop-image intentionally omitted: GRUB draws it OVER desktop-color (the
+# color is only a fallback if the image fails to load), so as long as an
+# image is set here, desktop-color is always invisible no matter what it's
+# set to - confirmed by a live magenta-background test that only the text
+# colors on top of the image actually changed. background.png is the
+# original theme's static, unrelated Catppuccin picture; dropping this line
+# makes the actual wallust color the real background.
 terminal-font: "HackNerdFontMonoBold16"
 title-text: ""
-desktop-image: "background.png"
-desktop-image-scale-method: "stretch"
 desktop-color: "{{background}}"
 terminal-left: "0"
 terminal-top: "0"
