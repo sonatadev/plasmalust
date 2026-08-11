@@ -130,4 +130,19 @@ if command -v bat >/dev/null; then
     bat cache --build >/dev/null 2>&1
 fi
 
+# 7. GRUB + SDDM theming touch root-owned system paths (/usr/share/grub,
+# /usr/share/sddm, /etc/sddm.conf.d), so they need sudo. `sudo -v` up front
+# means a single password prompt covers both calls below instead of two.
+# Non-fatal: if sudo is declined/fails, everything above (the actual
+# desktop) has already been applied successfully either way.
+PLASMALUST_REPO="$HOME/Projects/plasmalust"
+if [ -x "$PLASMALUST_REPO/grub-theme/install-grub-theme.sh" ] && [ -x "$PLASMALUST_REPO/sddm-theme/install-sddm.sh" ]; then
+    if sudo -v; then
+        sudo "$PLASMALUST_REPO/grub-theme/install-grub-theme.sh"
+        sudo "$PLASMALUST_REPO/sddm-theme/install-sddm.sh"
+    else
+        echo "Skipping GRUB/SDDM (sudo not available) - desktop theme is still fully applied."
+    fi
+fi
+
 echo "Theme successfully applied system-wide!"

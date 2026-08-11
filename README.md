@@ -25,6 +25,9 @@ screen is included too — see [System-level extras](#system-level-extras-option
 5. It rebuilds `bat`'s theme cache so the new colors actually take effect
    there (bat reads themes from a compiled cache, not the theme file
    directly).
+6. It applies the GRUB and SDDM themes too, via `sudo` - see
+   [System-level extras](#system-level-extras-optional-sudo-required)
+   below for what that actually does and how to opt out.
 
 Discord (Vesktop/Vencord) picks up the new Quick CSS live, no restart
 needed. vim/neovim, mpv, `fzf`, and the Zen browser pick theirs up on next
@@ -122,13 +125,25 @@ Re-run it any time you change your wallpaper.
 
 ## System-level extras (optional, sudo required)
 
-GRUB and SDDM theming are **not applied automatically** by `set-theme` — it
-only stages the generated files under `~/.cache/wallust/`. Actually applying
-them touches root-owned system paths (`/usr/share/grub/`, `/usr/share/sddm/`,
-`/etc/sddm.conf.d/`), and a broken login screen or boot menu is a much worse
-day than a stale terminal theme. Treat these as a deliberate, occasional
-step you run yourself when you're around to verify it worked — not something
-`set-theme` should ever do unattended.
+GRUB and SDDM theming touch root-owned system paths (`/usr/share/grub/`,
+`/usr/share/sddm/`, `/etc/sddm.conf.d/`). `set-theme` applies both
+automatically at the end of every run, via `sudo` (one password prompt
+covers both - `sudo -v` up front caches it). If sudo is declined or
+unavailable, this step is skipped and everything else in the run - the
+actual desktop theme - is unaffected; it already finished before this
+point.
+
+This assumes the repo lives at `~/Projects/plasmalust` (see the
+`PLASMALUST_REPO` line near the bottom of `set-theme`) - adjust that path if
+you clone it somewhere else, or delete that whole block if you'd rather keep
+GRUB/SDDM as a manual, occasional step instead (see below for running them
+by hand).
+
+A broken login screen or boot menu is a worse day than a stale terminal
+theme, so both install scripts are conservative: GRUB only changes color
+values (never touches `grub-mkconfig` or the boot path) and backs up the
+original on first run; SDDM comes with a documented TTY recovery path
+(below) if anything looks wrong.
 
 ### GRUB
 

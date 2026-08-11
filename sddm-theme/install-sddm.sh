@@ -58,4 +58,4 @@ mkdir -p /etc/sddm.conf.d
 printf '[Theme]\nCurrent=plasmalust\n' > /etc/sddm.conf.d/plasmalust.conf
 
 echo "Installed. The new theme takes effect on the next login screen (logout, or reboot to see it)."
-echo "To revert: rm /etc/sddm.conf.d/plasmalust.conf && systemctl restart sddm"
+echo "To revert: sudo rm /etc/sddm.conf.d/plasmalust.conf && sudo systemctl restart sddm"
