@@ -37,7 +37,7 @@ terminal-border: "0"
   item_font = "HackNerdFontMonoBold16"
   item_color = "{{foreground}}" # Color of the NON-selected text.
   selected_item_font = "HackNerdFontMonoBold16"
-  selected_item_color = "{{color1}}" # Color of the selected text.
+  selected_item_color = "{{foreground}}" # Color of the selected text.
   icon_width = 24 # Box size for the OS icons, scaled to fit these dimensions.
   icon_height = 28 # Box size for the OS icons, scaled to fit these dimensions.
   item_icon_space = 20 # Horizontal gap (in pixels) between the icon and the start of the text.
