@@ -7,7 +7,7 @@ Rectangle {
     id: root
     // Bound to the actual screen size instead of a hardcoded 1920x1080 -
     // a fixed size that doesn't match the real window/screen gets scaled
-    // to fit, which is what caused the "zoomed in" look.
+    // to fit, which is what caused an earlier "zoomed in" look.
     width: Screen.width
     height: Screen.height
     color: config.backgroundColor ? config.backgroundColor : "#151311"
@@ -45,9 +45,9 @@ Rectangle {
     Text {
         id: clock
         anchors.horizontalCenter: parent.horizontalCenter
-        y: root.height * 0.14
+        y: root.height * 0.12
         color: root.colorPrimary
-        font.pixelSize: 64
+        font.pixelSize: 68
 
         function refresh() { text = Qt.formatTime(new Date(), "hh:mm") }
         Component.onCompleted: refresh()
@@ -65,277 +65,278 @@ Rectangle {
         anchors.topMargin: 8
         anchors.horizontalCenter: parent.horizontalCenter
         color: root.colorPrimary
-        opacity: 0.8
+        opacity: 0.75
         font.pixelSize: 20
         text: Qt.formatDate(new Date(), "dddd, MMMM d")
     }
 
-    Rectangle {
-        id: loginPanel
-        width: 480
-        height: loginColumn.implicitHeight + 64
-        radius: 20
+    // No boxed "form panel" - elements float directly over the darkened
+    // wallpaper instead, which is what made the previous version look like
+    // a generic web form rather than a lock screen.
+    ColumnLayout {
+        id: loginColumn
+        width: 340
         anchors.centerIn: parent
-        color: Qt.rgba(root.colorPanel.r, root.colorPanel.g, root.colorPanel.b, 0.85)
+        anchors.verticalCenterOffset: root.height * 0.06
+        spacing: 10
 
-        ColumnLayout {
-            id: loginColumn
-            anchors.fill: parent
-            anchors.margins: 32
-            spacing: 18
+        Rectangle {
+            Layout.alignment: Qt.AlignHCenter
+            width: 120
+            height: 120
+            radius: 60
+            color: root.colorAccent
 
-            Rectangle {
-                Layout.alignment: Qt.AlignHCenter
-                width: 100
-                height: 100
-                radius: 50
-                color: root.colorAccent
+            Text {
+                anchors.centerIn: parent
+                text: userCombo.currentText.length > 0 ? userCombo.currentText.charAt(0).toUpperCase() : "?"
+                font.pixelSize: 44
+                color: root.colorPanel
+            }
+        }
 
-                Text {
-                    anchors.centerIn: parent
-                    text: userCombo.currentText.length > 0 ? userCombo.currentText.charAt(0).toUpperCase() : "?"
-                    font.pixelSize: 38
-                    color: root.colorPanel
+        Text {
+            Layout.alignment: Qt.AlignHCenter
+            Layout.topMargin: 8
+            text: userCombo.currentText
+            color: root.colorPrimary
+            font.pixelSize: 22
+            font.bold: true
+        }
+
+        // Only shown if there's actually more than one user - otherwise
+        // this would just be a pointless dropdown always sitting there for
+        // the overwhelmingly common single-user case.
+        ComboBox {
+            id: userCombo
+            Layout.alignment: Qt.AlignHCenter
+            visible: userModel.count > 1
+            implicitHeight: 24
+            model: userModel
+            textRole: "name"
+            currentIndex: userModel.lastIndex >= 0 ? userModel.lastIndex : 0
+
+            background: Item {}
+            contentItem: Text {
+                text: "Switch user ▾"
+                color: root.colorPrimary
+                opacity: 0.65
+                font.pixelSize: 13
+                horizontalAlignment: Text.AlignHCenter
+            }
+            indicator: Item {}
+            delegate: ItemDelegate {
+                width: 200
+                height: 40
+                highlighted: userCombo.highlightedIndex === index
+                contentItem: Text {
+                    text: name
+                    color: root.colorPrimary
+                    font.pixelSize: 15
+                    leftPadding: 14
+                    verticalAlignment: Text.AlignVCenter
+                }
+                background: Rectangle {
+                    color: highlighted ? Qt.rgba(root.colorAccent.r, root.colorAccent.g, root.colorAccent.b, 0.25) : "transparent"
                 }
             }
-
-            ComboBox {
-                id: userCombo
-                Layout.fillWidth: true
-                height: 52
-                model: userModel
-                textRole: "name"
-                currentIndex: userModel.lastIndex >= 0 ? userModel.lastIndex : 0
+            popup: Popup {
+                y: userCombo.height + 4
+                x: (userCombo.width - width) / 2
+                width: 200
+                padding: 4
+                implicitHeight: contentItem.implicitHeight + 8
 
                 background: Rectangle {
                     radius: 10
-                    color: root.fieldBackground
+                    color: root.colorPanel
                     border.color: root.fieldBorder
                     border.width: 1
                 }
-                contentItem: Text {
-                    text: userCombo.displayText
-                    color: root.colorPrimary
-                    font.pixelSize: 17
-                    leftPadding: 16
-                    verticalAlignment: Text.AlignVCenter
-                }
-                indicator: Text {
-                    x: userCombo.width - width - 16
-                    y: (userCombo.height - height) / 2
-                    text: "▾"
-                    font.pixelSize: 16
-                    color: root.colorPrimary
-                }
-                delegate: ItemDelegate {
-                    width: userCombo.width
-                    height: 44
-                    highlighted: userCombo.highlightedIndex === index
-                    contentItem: Text {
-                        text: name
-                        color: root.colorPrimary
-                        font.pixelSize: 16
-                        leftPadding: 16
-                        verticalAlignment: Text.AlignVCenter
-                    }
-                    background: Rectangle {
-                        color: highlighted ? Qt.rgba(root.colorAccent.r, root.colorAccent.g, root.colorAccent.b, 0.25) : "transparent"
-                    }
-                }
-                popup: Popup {
-                    y: userCombo.height + 4
-                    width: userCombo.width
-                    padding: 4
-                    implicitHeight: contentItem.implicitHeight + 8
-
-                    background: Rectangle {
-                        radius: 10
-                        color: root.colorPanel
-                        border.color: root.fieldBorder
-                        border.width: 1
-                    }
-                    contentItem: ListView {
-                        clip: true
-                        implicitHeight: contentHeight
-                        model: userCombo.popup.visible ? userCombo.delegateModel : null
-                        currentIndex: userCombo.highlightedIndex
-                    }
+                contentItem: ListView {
+                    clip: true
+                    implicitHeight: contentHeight
+                    model: userCombo.popup.visible ? userCombo.delegateModel : null
+                    currentIndex: userCombo.highlightedIndex
                 }
             }
+        }
+
+        // Password field with an inline circular submit button, instead of
+        // a separate "Login" button crammed into the same row as the
+        // session picker.
+        Item {
+            Layout.fillWidth: true
+            Layout.topMargin: 18
+            Layout.preferredHeight: 56
 
             TextField {
                 id: passwordField
-                Layout.fillWidth: true
-                height: 52
+                anchors.fill: parent
                 font.pixelSize: 17
                 echoMode: TextInput.Password
                 placeholderText: "Password"
                 placeholderTextColor: Qt.rgba(root.colorPrimary.r, root.colorPrimary.g, root.colorPrimary.b, 0.5)
                 color: root.colorPrimary
-                leftPadding: 16
-                rightPadding: 16
+                leftPadding: 20
+                rightPadding: 56
                 focus: true
                 onAccepted: sddm.login(userCombo.currentText, passwordField.text, sessionCombo.currentIndex)
 
                 background: Rectangle {
-                    radius: 10
+                    radius: height / 2
                     color: root.fieldBackground
                     border.color: root.fieldBorder
                     border.width: 1
                 }
             }
 
-            Text {
-                id: errorText
-                Layout.fillWidth: true
-                color: root.colorError
-                font.pixelSize: 15
-                visible: text.length > 0
-                wrapMode: Text.WordWrap
-            }
+            Button {
+                id: submitButton
+                width: 40
+                height: 40
+                anchors.right: parent.right
+                anchors.rightMargin: 8
+                anchors.verticalCenter: parent.verticalCenter
+                onClicked: sddm.login(userCombo.currentText, passwordField.text, sessionCombo.currentIndex)
 
-            RowLayout {
-                Layout.fillWidth: true
-
-                ComboBox {
-                    id: sessionCombo
-                    Layout.fillWidth: true
-                    height: 48
-                    model: sessionModel
-                    textRole: "name"
-                    currentIndex: sessionModel.lastIndex >= 0 ? sessionModel.lastIndex : 0
-
-                    background: Rectangle {
-                        radius: 10
-                        color: root.fieldBackground
-                        border.color: root.fieldBorder
-                        border.width: 1
-                    }
-                    contentItem: Text {
-                        text: sessionCombo.displayText
-                        color: root.colorPrimary
-                        font.pixelSize: 15
-                        leftPadding: 14
-                        verticalAlignment: Text.AlignVCenter
-                    }
-                    indicator: Text {
-                        x: sessionCombo.width - width - 14
-                        y: (sessionCombo.height - height) / 2
-                        text: "▾"
-                        font.pixelSize: 15
-                        color: root.colorPrimary
-                    }
-                    delegate: ItemDelegate {
-                        width: sessionCombo.width
-                        height: 40
-                        highlighted: sessionCombo.highlightedIndex === index
-                        contentItem: Text {
-                            text: name
-                            color: root.colorPrimary
-                            font.pixelSize: 15
-                            leftPadding: 14
-                            verticalAlignment: Text.AlignVCenter
-                        }
-                        background: Rectangle {
-                            color: highlighted ? Qt.rgba(root.colorAccent.r, root.colorAccent.g, root.colorAccent.b, 0.25) : "transparent"
-                        }
-                    }
-                    popup: Popup {
-                        y: sessionCombo.height + 4
-                        width: sessionCombo.width
-                        padding: 4
-                        implicitHeight: contentItem.implicitHeight + 8
-
-                        background: Rectangle {
-                            radius: 10
-                            color: root.colorPanel
-                            border.color: root.fieldBorder
-                            border.width: 1
-                        }
-                        contentItem: ListView {
-                            clip: true
-                            implicitHeight: contentHeight
-                            model: sessionCombo.popup.visible ? sessionCombo.delegateModel : null
-                            currentIndex: sessionCombo.highlightedIndex
-                        }
-                    }
+                background: Rectangle {
+                    radius: 20
+                    color: submitButton.down ? Qt.darker(root.colorAccent, 1.2) : root.colorAccent
                 }
-
-                Button {
-                    id: loginButton
-                    text: "Login"
-                    height: 48
-                    onClicked: sddm.login(userCombo.currentText, passwordField.text, sessionCombo.currentIndex)
-
-                    background: Rectangle {
-                        radius: 10
-                        color: loginButton.down ? Qt.darker(root.colorAccent, 1.2) : root.colorAccent
-                    }
-                    contentItem: Text {
-                        text: loginButton.text
-                        color: root.colorPanel
-                        font.pixelSize: 16
-                        font.bold: true
-                        horizontalAlignment: Text.AlignHCenter
-                        verticalAlignment: Text.AlignVCenter
-                        leftPadding: 8
-                        rightPadding: 8
-                    }
+                contentItem: Text {
+                    text: "→"
+                    color: root.colorPanel
+                    font.pixelSize: 20
+                    font.bold: true
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
                 }
             }
+        }
 
-            RowLayout {
-                Layout.fillWidth: true
-                Layout.topMargin: 8
-                Layout.alignment: Qt.AlignHCenter
-                spacing: 16
+        Text {
+            id: errorText
+            Layout.fillWidth: true
+            Layout.topMargin: 4
+            color: root.colorError
+            font.pixelSize: 14
+            horizontalAlignment: Text.AlignHCenter
+            visible: text.length > 0
+            wrapMode: Text.WordWrap
+        }
 
-                Button {
-                    id: rebootButton
-                    text: "Reboot"
-                    height: 44
-                    visible: sddm.canReboot
-                    onClicked: sddm.reboot()
+        // Subtle, de-emphasized - most people never touch this, so it
+        // shouldn't compete visually with the password field.
+        ComboBox {
+            id: sessionCombo
+            Layout.alignment: Qt.AlignHCenter
+            Layout.topMargin: 10
+            implicitHeight: 24
+            model: sessionModel
+            textRole: "name"
+            currentIndex: sessionModel.lastIndex >= 0 ? sessionModel.lastIndex : 0
 
-                    background: Rectangle {
-                        radius: 10
-                        color: rebootButton.down ? root.fieldBorder : root.fieldBackground
-                        border.color: root.fieldBorder
-                        border.width: 1
-                    }
-                    contentItem: Text {
-                        text: rebootButton.text
-                        color: root.colorPrimary
-                        font.pixelSize: 15
-                        horizontalAlignment: Text.AlignHCenter
-                        verticalAlignment: Text.AlignVCenter
-                        leftPadding: 8
-                        rightPadding: 8
-                    }
+            background: Item {}
+            contentItem: Text {
+                text: sessionCombo.displayText + "  ▾"
+                color: root.colorPrimary
+                opacity: 0.65
+                font.pixelSize: 13
+                horizontalAlignment: Text.AlignHCenter
+            }
+            indicator: Item {}
+            delegate: ItemDelegate {
+                width: 200
+                height: 40
+                highlighted: sessionCombo.highlightedIndex === index
+                contentItem: Text {
+                    text: name
+                    color: root.colorPrimary
+                    font.pixelSize: 15
+                    leftPadding: 14
+                    verticalAlignment: Text.AlignVCenter
                 }
-                Button {
-                    id: shutdownButton
-                    text: "Shutdown"
-                    height: 44
-                    visible: sddm.canPowerOff
-                    onClicked: sddm.powerOff()
-
-                    background: Rectangle {
-                        radius: 10
-                        color: shutdownButton.down ? root.fieldBorder : root.fieldBackground
-                        border.color: root.fieldBorder
-                        border.width: 1
-                    }
-                    contentItem: Text {
-                        text: shutdownButton.text
-                        color: root.colorPrimary
-                        font.pixelSize: 15
-                        horizontalAlignment: Text.AlignHCenter
-                        verticalAlignment: Text.AlignVCenter
-                        leftPadding: 8
-                        rightPadding: 8
-                    }
+                background: Rectangle {
+                    color: highlighted ? Qt.rgba(root.colorAccent.r, root.colorAccent.g, root.colorAccent.b, 0.25) : "transparent"
                 }
+            }
+            popup: Popup {
+                y: sessionCombo.height + 4
+                x: (sessionCombo.width - width) / 2
+                width: 200
+                padding: 4
+                implicitHeight: contentItem.implicitHeight + 8
+
+                background: Rectangle {
+                    radius: 10
+                    color: root.colorPanel
+                    border.color: root.fieldBorder
+                    border.width: 1
+                }
+                contentItem: ListView {
+                    clip: true
+                    implicitHeight: contentHeight
+                    model: sessionCombo.popup.visible ? sessionCombo.delegateModel : null
+                    currentIndex: sessionCombo.highlightedIndex
+                }
+            }
+        }
+    }
+
+    // Power controls tucked in a screen corner, detached from the login
+    // form entirely - a cleaner, more common modern-lock-screen convention
+    // than cramming them into the same card as the password field.
+    RowLayout {
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+        anchors.margins: 24
+        spacing: 12
+
+        Button {
+            id: rebootButton
+            text: "Reboot"
+            height: 36
+            visible: sddm.canReboot
+            onClicked: sddm.reboot()
+
+            background: Rectangle {
+                radius: 18
+                color: rebootButton.down ? root.fieldBorder : root.fieldBackground
+                border.color: root.fieldBorder
+                border.width: 1
+            }
+            contentItem: Text {
+                text: rebootButton.text
+                color: root.colorPrimary
+                font.pixelSize: 13
+                horizontalAlignment: Text.AlignHCenter
+                verticalAlignment: Text.AlignVCenter
+                leftPadding: 10
+                rightPadding: 10
+            }
+        }
+        Button {
+            id: shutdownButton
+            text: "Shutdown"
+            height: 36
+            visible: sddm.canPowerOff
+            onClicked: sddm.powerOff()
+
+            background: Rectangle {
+                radius: 18
+                color: shutdownButton.down ? root.fieldBorder : root.fieldBackground
+                border.color: root.fieldBorder
+                border.width: 1
+            }
+            contentItem: Text {
+                text: shutdownButton.text
+                color: root.colorPrimary
+                font.pixelSize: 13
+                horizontalAlignment: Text.AlignHCenter
+                verticalAlignment: Text.AlignVCenter
+                leftPadding: 10
+                rightPadding: 10
             }
         }
     }
