@@ -78,3 +78,7 @@ target = "/home/YOUR_USERNAME/.cache/wallust/sddm-theme.conf"
 [templates.eza]
 template = "eza-colors.sh"
 target = "/home/YOUR_USERNAME/.cache/wallust/eza.sh"
+
+[templates.android-studio]
+template = "android-studio.icls"
+target = "/home/YOUR_USERNAME/.config/Google/AndroidStudioXXXX.X/colors/Wallust.icls"

@@ -66,6 +66,7 @@ true hot-reload the way kitty/Plasma do.
 | `fzf` | `templates/fzf-colors.sh` |
 | `eza` | `templates/eza-colors.sh` |
 | Zen browser (userChrome.css) | `templates/zen-userchrome.css` |
+| Android Studio (editor color scheme) | `templates/android-studio.icls` |
 | GRUB (needs sudo to apply) | `templates/grub-theme.txt` |
 | SDDM login screen, if active (needs sudo to apply) | `templates/sddm-theme.conf` |
 | plasmalogin login screen, if active (needs sudo to apply) | see `plasmalogin/install-plasmalogin.sh` |
@@ -135,6 +136,17 @@ Re-run it any time you change your wallpaper.
   so `chrome/userChrome.css` gets loaded. Requires a browser restart to pick
   up new colors — Firefox-family browsers only read `userChrome.css` at
   startup.
+- **Android Studio**: the `wallust.toml` target path has your Android Studio
+  version baked into it (e.g. `AndroidStudio2026.1.3`) since JetBrains
+  versions its config directories - adjust it to match
+  `~/.config/Google/` on your machine, and bump it after upgrading Android
+  Studio to a new major version. Generates an editor color scheme (syntax
+  highlighting) inheriting from Darcula, not a full UI theme - JetBrains UI
+  themes are a much bigger, separate customization surface (hundreds of
+  defined keys for every widget), out of scope here. `set-theme` also
+  updates `options/colors.scheme.xml` to actually select it; a restart of
+  Android Studio is needed to pick up new colors, same as other apps that
+  don't hot-reload.
 - **Idle/lock screen (`kscreenlocker`)**: wallpaper is synced automatically
   (see above), and it picks up real colors via `Kirigami.Theme.colorSet:
   Complementary`, which the KDE color scheme template also fills in - so

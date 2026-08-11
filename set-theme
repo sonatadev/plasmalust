@@ -15,7 +15,7 @@ fi
 
 echo "Detected active wallpaper: $WALLPAPER"
 
-# 0. GRUB/SDDM (step 8 below) need sudo - ask up front instead of partway
+# 0. GRUB/SDDM (step 9 below) need sudo - ask up front instead of partway
 # through, so the whole run doesn't sit waiting on a password prompt you
 # might not be at the keyboard for. Declining just skips that step later;
 # everything else below still runs normally either way.
@@ -95,7 +95,18 @@ kstart plasmashell >/dev/null 2>&1 &
 # on whatever was last set (often a distro default) unless synced here.
 kwriteconfig6 --file kscreenlockerrc --group Greeter --group Wallpaper --group org.kde.image --group General --key Image "$WALLPAPER"
 
-# 6. Spicetify: wallust already regenerated Themes/wallust/user.css (--spice-* CSS vars,
+# 6. Android Studio: wallust already regenerated colors/Wallust.icls (the
+# [templates.android-studio] entry), but that only makes it available - it
+# still needs to be actually selected as the active editor color scheme.
+# colors.scheme.xml is JetBrains' own XML format, not a KDE ini file, so
+# this is a targeted sed rather than kwriteconfig6.
+ANDROID_STUDIO_DIR="$HOME/.config/Google/AndroidStudio2026.1.3"
+ANDROID_STUDIO_SCHEME_XML="$ANDROID_STUDIO_DIR/options/colors.scheme.xml"
+if [ -f "$ANDROID_STUDIO_DIR/colors/Wallust.icls" ] && [ -f "$ANDROID_STUDIO_SCHEME_XML" ]; then
+    sed -i 's/global_color_scheme name="[^"]*"/global_color_scheme name="Wallust"/' "$ANDROID_STUDIO_SCHEME_XML"
+fi
+
+# 7. Spicetify: wallust already regenerated Themes/wallust/user.css (--spice-* CSS vars,
 # per the [templates.spicetify] entry in wallust.toml). Also derive Themes/wallust/color.ini
 # from it (spicetify's replace_colors patcher wants hex-without-# key=value pairs, not CSS
 # vars) since there's no wallust template output in that format directly.
@@ -136,7 +147,7 @@ if [ -f "$SPICE_THEME_DIR/user.css" ] && command -v spicetify >/dev/null; then
     fi
 fi
 
-# 7. bat reads themes from a prebuilt binary cache, not the theme files
+# 8. bat reads themes from a prebuilt binary cache, not the theme files
 # directly - rebuild it so the new Wallust.tmTheme colors actually take
 # effect (bat --theme=Wallust would otherwise silently keep the old cached
 # palette and warn "Unknown theme").
@@ -144,7 +155,7 @@ if command -v bat >/dev/null; then
     bat cache --build >/dev/null 2>&1
 fi
 
-# 8. GRUB + login-manager theming touch root-owned system paths, so they
+# 9. GRUB + login-manager theming touch root-owned system paths, so they
 # need sudo - prompted for upfront in step 0. Non-fatal: if sudo was
 # declined/failed, everything above (the actual desktop) has already been
 # applied successfully either way. The sudo -v here is just a refresh in
