@@ -15,6 +15,15 @@ fi
 
 echo "Detected active wallpaper: $WALLPAPER"
 
+# 0. GRUB/SDDM (step 7 below) need sudo - ask up front instead of partway
+# through, so the whole run doesn't sit waiting on a password prompt you
+# might not be at the keyboard for. Declining just skips that step later;
+# everything else below still runs normally either way.
+PLASMALUST_REPO="$HOME/Projects/plasmalust"
+if [ -x "$PLASMALUST_REPO/grub-theme/install-grub-theme.sh" ] && [ -x "$PLASMALUST_REPO/sddm-theme/install-sddm.sh" ]; then
+    sudo -v
+fi
+
 # 1. Run Wallust with --no-cache
 # This regenerates: the KDE color scheme (~/.local/share/color-schemes/Wallust.colors),
 # the kitty theme (~/.config/kitty/current-theme.conf), fastfetch config, and live
@@ -131,11 +140,11 @@ if command -v bat >/dev/null; then
 fi
 
 # 7. GRUB + SDDM theming touch root-owned system paths (/usr/share/grub,
-# /usr/share/sddm, /etc/sddm.conf.d), so they need sudo. `sudo -v` up front
-# means a single password prompt covers both calls below instead of two.
-# Non-fatal: if sudo is declined/fails, everything above (the actual
-# desktop) has already been applied successfully either way.
-PLASMALUST_REPO="$HOME/Projects/plasmalust"
+# /usr/share/sddm, /etc/sddm.conf.d), so they need sudo - prompted for
+# upfront in step 0. Non-fatal: if sudo was declined/failed, everything
+# above (the actual desktop) has already been applied successfully either
+# way. The sudo -v here is just a refresh in case a slow run let the
+# credential cache from step 0 expire - normally a silent no-op.
 if [ -x "$PLASMALUST_REPO/grub-theme/install-grub-theme.sh" ] && [ -x "$PLASMALUST_REPO/sddm-theme/install-sddm.sh" ]; then
     if sudo -v; then
         sudo "$PLASMALUST_REPO/grub-theme/install-grub-theme.sh"
