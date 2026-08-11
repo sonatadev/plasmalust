@@ -28,10 +28,14 @@ below).
 4. It pushes the new colors live into every open terminal, restarts
    `plasmashell` for a clean redraw, and — if Spotify is running — rebuilds
    and reloads the Spicetify theme too.
-5. It rebuilds `bat`'s theme cache so the new colors actually take effect
+5. It syncs the wallpaper used by the idle/lock screen (`kscreenlocker`) -
+   a separate per-user setting the desktop wallpaper change doesn't touch on
+   its own, so it otherwise stays on whatever was last set (often a distro
+   default).
+6. It rebuilds `bat`'s theme cache so the new colors actually take effect
    there (bat reads themes from a compiled cache, not the theme file
    directly).
-6. It applies the GRUB theme and whichever login manager (SDDM or
+7. It applies the GRUB theme and whichever login manager (SDDM or
    plasmalogin) is actually active, via `sudo` - see
    [System-level extras](#system-level-extras-optional-sudo-required)
    below for what that actually does and how to opt out.
@@ -131,6 +135,18 @@ Re-run it any time you change your wallpaper.
   so `chrome/userChrome.css` gets loaded. Requires a browser restart to pick
   up new colors — Firefox-family browsers only read `userChrome.css` at
   startup.
+- **Idle/lock screen (`kscreenlocker`)**: wallpaper is synced automatically
+  (see above), and it picks up real colors via `Kirigami.Theme.colorSet:
+  Complementary`, which the KDE color scheme template also fills in - so
+  it's already more than a stock default. Full custom layout the way SDDM
+  got one isn't realistic here though: `kscreenlocker`'s lock screen is
+  `org.kde.plasma.desktop`'s actual shell component, built on private
+  Plasma APIs (session management, real PAM authentication, virtual
+  keyboard) across several linked QML files - not a small standalone
+  swappable theme. Reimplementing that carries real risk (a broken lock
+  screen strands an already-unlocked session, worse than a broken login
+  prompt), so this repo only does the safe color/wallpaper-level sync, not
+  a layout rebuild.
 
 ## System-level extras (optional, sudo required)
 
