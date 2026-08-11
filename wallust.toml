@@ -82,3 +82,7 @@ target = "/home/YOUR_USERNAME/.cache/wallust/eza.sh"
 [templates.android-studio]
 template = "android-studio.icls"
 target = "/home/YOUR_USERNAME/.config/Google/AndroidStudioXXXX.X/colors/Wallust.icls"
+
+[templates.android-studio-ui-theme]
+template = "android-studio.theme.json"
+target = "/home/YOUR_USERNAME/.cache/wallust/plasmalust.theme.json"

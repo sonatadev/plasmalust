@@ -1,0 +1,55 @@
+{
+  "name": "Plasmalust",
+  "dark": true,
+  "author": "wallust",
+
+  "colors": {
+    "plasmalustBackground": "{{background | strip}}",
+    "plasmalustBackgroundAlt": "{{color0 | strip}}",
+    "plasmalustForeground": "{{foreground | strip}}",
+    "plasmalustMuted": "{{color8 | strip}}",
+    "plasmalustAccent": "{{color5 | strip}}"
+  },
+
+  "ui": {
+    "*": {
+      "background": "plasmalustBackground",
+      "foreground": "plasmalustForeground",
+      "selectionBackground": "plasmalustAccent",
+      "selectionForeground": "plasmalustBackground",
+      "selectionInactiveBackground": "plasmalustBackgroundAlt",
+      "selectionBackgroundInactive": "plasmalustBackgroundAlt",
+      "borderColor": "plasmalustBackgroundAlt"
+    },
+
+    "Panel.background": "plasmalustBackground",
+    "Tree.background": "plasmalustBackground",
+    "Tree.foreground": "plasmalustForeground",
+    "List.background": "plasmalustBackground",
+    "List.foreground": "plasmalustForeground",
+
+    "ToolWindow.Header.background": "plasmalustBackgroundAlt",
+    "ToolWindow.HeaderTab.selectedBackground": "plasmalustBackground",
+    "ToolWindow.Button.selectedBackground": "plasmalustBackgroundAlt",
+
+    "EditorTabs.background": "plasmalustBackgroundAlt",
+    "EditorTabs.underlineColor": "plasmalustAccent",
+    "EditorTabs.selectedBackground": "plasmalustBackground",
+    "EditorTabs.inactiveUnderlineColor": "plasmalustMuted",
+
+    "StatusBar.background": "plasmalustBackgroundAlt",
+    "StatusBar.borderColor": "plasmalustBackgroundAlt",
+
+    "MainToolbar.background": "plasmalustBackgroundAlt",
+    "MainToolbar.Dropdown.hoverBackground": "plasmalustBackground",
+
+    "Component.borderColor": "plasmalustBackgroundAlt",
+    "Component.focusColor": "plasmalustAccent",
+
+    "Button.background": "plasmalustBackgroundAlt",
+    "Button.foreground": "plasmalustForeground",
+
+    "TitlePane.background": "plasmalustBackgroundAlt",
+    "TitlePane.foreground": "plasmalustForeground"
+  }
+}

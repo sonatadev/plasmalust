@@ -66,7 +66,8 @@ true hot-reload the way kitty/Plasma do.
 | `fzf` | `templates/fzf-colors.sh` |
 | `eza` | `templates/eza-colors.sh` |
 | Zen browser (userChrome.css) | `templates/zen-userchrome.css` |
-| Android Studio (editor color scheme) | `templates/android-studio.icls` |
+| Android Studio editor (syntax highlighting) | `templates/android-studio.icls` |
+| Android Studio UI (sidebar/toolbar/panels) | `templates/android-studio.theme.json` + `android-studio-theme/` |
 | GRUB (needs sudo to apply) | `templates/grub-theme.txt` |
 | SDDM login screen, if active (needs sudo to apply) | `templates/sddm-theme.conf` |
 | plasmalogin login screen, if active (needs sudo to apply) | see `plasmalogin/install-plasmalogin.sh` |
@@ -136,17 +137,43 @@ Re-run it any time you change your wallpaper.
   so `chrome/userChrome.css` gets loaded. Requires a browser restart to pick
   up new colors — Firefox-family browsers only read `userChrome.css` at
   startup.
-- **Android Studio**: the `wallust.toml` target path has your Android Studio
-  version baked into it (e.g. `AndroidStudio2026.1.3`) since JetBrains
-  versions its config directories - adjust it to match
-  `~/.config/Google/` on your machine, and bump it after upgrading Android
-  Studio to a new major version. Generates an editor color scheme (syntax
-  highlighting) inheriting from Darcula, not a full UI theme - JetBrains UI
-  themes are a much bigger, separate customization surface (hundreds of
-  defined keys for every widget), out of scope here. `set-theme` also
-  updates `options/colors.scheme.xml` to actually select it; a restart of
-  Android Studio is needed to pick up new colors, same as other apps that
-  don't hot-reload.
+- **Android Studio**: the `wallust.toml` target paths (and the two
+  `ANDROID_STUDIO_*` variables near the bottom of `set-theme`) have your
+  Android Studio version baked in (e.g. `AndroidStudio2026.1.3`) since
+  JetBrains versions its config/plugin directories - adjust them to match
+  `~/.config/Google/` and `~/.local/share/Google/` on your machine, and
+  bump them after upgrading to a new major version. Two independent pieces:
+
+  1. **Editor color scheme** (syntax highlighting) - `templates/android-studio.icls`,
+     inherits from Darcula. Some wallpapers produce a narrow-range palette
+     where color1-color6 all cluster in similar muted tones (confirmed with
+     a forest-green wallpaper) - rather than assigning each syntax category
+     its own hue and risking illegible, same-toned code, this leans on
+     `{{foreground}}` (wallust's own contrast-guaranteed color) for most
+     text, with a single accent color for strings/numbers/classes and bold
+     weight to distinguish keywords instead of relying on hue variety that
+     may not exist. `set-theme` also flips `options/colors.scheme.xml`
+     (JetBrains' own XML format, not a KDE ini file - hence a targeted
+     `sed`, not `kwriteconfig6`) to actually select it.
+
+  2. **UI theme** (sidebar/toolbar/panels/status bar - the rest of the IDE
+     chrome, which the editor scheme above doesn't touch) -
+     `templates/android-studio.theme.json` +
+     [`android-studio-theme/plugin-src/`](./android-studio-theme/plugin-src/).
+     JetBrains requires UI themes be packaged as a real installed plugin
+     (a JAR with `META-INF/plugin.xml` inside - confirmed against
+     [JetBrains' own theme_basics sample](https://github.com/JetBrains/intellij-sdk-code-samples/tree/main/theme_basics)
+     and the on-disk layout of an already-installed plugin on this machine),
+     not something you can just drop as a loose file. `set-theme` rebuilds
+     the JAR fresh every run (static `plugin.xml` + freshly-generated
+     `theme.json`) and drops it straight into the installed-plugins
+     location - IntelliJ-platform IDEs discover plugins by scanning that
+     directory at startup, the same mechanism as installing one normally
+     through the Plugins UI, so no manual reinstall step is needed after
+     the first run.
+
+  Both need an Android Studio restart to pick up new colors, like other
+  apps here that don't hot-reload.
 - **Idle/lock screen (`kscreenlocker`)**: wallpaper is synced automatically
   (see above), and it picks up real colors via `Kirigami.Theme.colorSet:
   Complementary`, which the KDE color scheme template also fills in - so

@@ -106,6 +106,26 @@ if [ -f "$ANDROID_STUDIO_DIR/colors/Wallust.icls" ] && [ -f "$ANDROID_STUDIO_SCH
     sed -i 's/global_color_scheme name="[^"]*"/global_color_scheme name="Wallust"/' "$ANDROID_STUDIO_SCHEME_XML"
 fi
 
+# Android Studio UI theme (chrome: sidebar/toolbar/panels, not just the
+# editor text area) - a real installed-plugin JAR is required for this,
+# not just a dropped file, per JetBrains' own plugin format. Repackaged
+# fresh every run from the static plugin.xml (repo) + the just-regenerated
+# theme.json (cache), then dropped straight into the installed-plugin
+# location - IntelliJ-platform IDEs discover plugins by scanning that
+# directory at startup, same as one installed normally via the Plugins UI.
+PLASMALUST_AS_THEME_JSON="$HOME/.cache/wallust/plasmalust.theme.json"
+PLASMALUST_AS_PLUGIN_SRC="$PLASMALUST_REPO/android-studio-theme/plugin-src"
+ANDROID_STUDIO_PLUGINS_DIR="$HOME/.local/share/Google/AndroidStudio2026.1.3"
+if [ -f "$PLASMALUST_AS_THEME_JSON" ] && [ -d "$PLASMALUST_AS_PLUGIN_SRC" ] && [ -d "$ANDROID_STUDIO_PLUGINS_DIR" ]; then
+    AS_BUILD_DIR=$(mktemp -d)
+    cp -r "$PLASMALUST_AS_PLUGIN_SRC/META-INF" "$AS_BUILD_DIR/"
+    cp "$PLASMALUST_AS_THEME_JSON" "$AS_BUILD_DIR/plasmalust.theme.json"
+    AS_PLUGIN_LIB_DIR="$ANDROID_STUDIO_PLUGINS_DIR/plasmalust-theme/lib"
+    mkdir -p "$AS_PLUGIN_LIB_DIR"
+    (cd "$AS_BUILD_DIR" && zip -rq "$AS_PLUGIN_LIB_DIR/plasmalust-theme.jar" META-INF plasmalust.theme.json)
+    rm -rf "$AS_BUILD_DIR"
+fi
+
 # 7. Spicetify: wallust already regenerated Themes/wallust/user.css (--spice-* CSS vars,
 # per the [templates.spicetify] entry in wallust.toml). Also derive Themes/wallust/color.ini
 # from it (spicetify's replace_colors patcher wants hex-without-# key=value pairs, not CSS
