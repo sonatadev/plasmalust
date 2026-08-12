@@ -240,6 +240,31 @@ wallust theming (`~/.cache/wallust/fzf.sh`), so no separate template is
 needed. Install the packages it wraps, symlink or copy the script to
 `~/.local/bin/plasmalust-toybox`, alias `toybox` to it if you want.
 
+## Icons + cursor theme (optional)
+
+Neither icon nor cursor themes take arbitrary hex - each ships a small
+curated set of pre-built variants - so `icons-cursors/nearest-swatch.py`
+picks whichever variant is closest (plain RGB distance) to the current
+wallust accent, from swatches pulled directly from the real source assets
+(not guessed):
+
+- **Icons**: [Papirus-Dark](https://github.com/PapirusDevelopmentTeam/papirus-icon-theme),
+  folder color recolored via `papirus-folders` (24 named colors).
+- **Cursor**: [Bibata-Modern](https://aur.archlinux.org/packages/bibata-cursor-theme)
+  - Classic (dark), Ice (light), or Amber, picked to match.
+
+Install once:
+
+```
+./icons-cursors/install-icons-cursors.sh
+```
+
+`set-theme` picks up from there automatically - the icon/cursor theme
+*selection* (step 2c) needs no sudo, only the actual Papirus folder
+recoloring does (folded into the same sudo-gated block as GRUB/login-manager
+below, since it touches Papirus's system-owned directory). Both stay
+inert no-ops until the install script has been run once.
+
 ## System-level extras (optional, sudo required)
 
 GRUB and login-screen theming touch root-owned system paths. `set-theme`

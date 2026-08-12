@@ -90,6 +90,23 @@ if [ -n "$BG_HEX" ] && [ -n "$ACCENT_HEX" ] && command -v magick >/dev/null; the
         "$HOME/.cache/wallust/portrait-dither.png"
 fi
 
+# 2c. Icon theme + cursor theme selection. Neither Papirus (icons) nor
+# Bibata (cursors) takes arbitrary hex - each only ships a small curated
+# set of pre-built color variants - so nearest-swatch.py picks the closest
+# one to the current accent instead. Only the selection happens here (pure
+# kdeglobals/kcminputrc keys, no sudo); actually recoloring Papirus's
+# folder icons via papirus-folders touches its system-owned directory, so
+# that part happens later in the sudo-gated block (step 9). Both are
+# no-ops until icons-cursors/install-icons-cursors.sh has been run once.
+ICONS_CURSORS_DIR="$PLASMALUST_REPO/icons-cursors"
+if [ -f "$ICONS_CURSORS_DIR/nearest-swatch.py" ] && [ -d /usr/share/icons/Papirus-Dark ]; then
+    kwriteconfig6 --file kdeglobals --group Icons --key Theme "Papirus-Dark"
+    BIBATA_VARIANT=$(python3 "$ICONS_CURSORS_DIR/nearest-swatch.py" bibata "$ACCENT_HEX" 2>/dev/null || true)
+    if [ -n "$BIBATA_VARIANT" ] && [ -d "/usr/share/icons/Bibata-Modern-$BIBATA_VARIANT" ]; then
+        kwriteconfig6 --file kcminputrc --group Mouse --key cursorTheme "Bibata-Modern-$BIBATA_VARIANT"
+    fi
+fi
+
 # 3. Push the new colors to already-open terminals immediately, without waiting for
 # a new window (writes wallust's OSC sequences to every pty the user owns).
 SEQ_FILE="$HOME/.cache/wallust/sequences"
@@ -218,6 +235,17 @@ if [ -x "$PLASMALUST_REPO/grub-theme/install-grub-theme.sh" ] && [ -n "$LOGIN_IN
         sudo "$LOGIN_INSTALLER"
     else
         echo "Skipping GRUB/login manager (sudo not available) - desktop theme is still fully applied."
+    fi
+fi
+
+# Recolor Papirus's folder icons to match the current accent (step 2c
+# already picked the icon/cursor theme and cursor variant - this is just
+# the one piece of that which needs root, since papirus-folders re-symlinks
+# icons inside Papirus-Dark's system-owned directory).
+if [ -f "$ICONS_CURSORS_DIR/nearest-swatch.py" ] && [ -d /usr/share/icons/Papirus-Dark ] && command -v papirus-folders >/dev/null; then
+    if sudo -v; then
+        PAPIRUS_COLOR=$(python3 "$ICONS_CURSORS_DIR/nearest-swatch.py" papirus "$ACCENT_HEX" 2>/dev/null || true)
+        [ -n "$PAPIRUS_COLOR" ] && sudo papirus-folders -C "$PAPIRUS_COLOR" --theme Papirus-Dark
     fi
 fi
 
