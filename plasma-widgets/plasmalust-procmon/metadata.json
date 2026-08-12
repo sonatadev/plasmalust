@@ -1,0 +1,17 @@
+{
+    "KPackageStructure": "Plasma/Applet",
+    "KPlugin": {
+        "Authors": [
+            {
+                "Name": "plasmalust"
+            }
+        ],
+        "Category": "System Information",
+        "Description": "Ornate-framed top-processes panel (PID/name/user/mem/cpu, sorted by CPU) matching the other plasmalust widgets, colors driven by the active wallust palette.",
+        "Icon": "utilities-system-monitor",
+        "Id": "dev.plasmalust.procmon",
+        "Name": "Plasmalust Processes",
+        "Version": "1.0"
+    },
+    "X-Plasma-API-Minimum-Version": "6.0"
+}

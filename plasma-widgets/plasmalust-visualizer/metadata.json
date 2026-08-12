@@ -1,0 +1,17 @@
+{
+    "KPackageStructure": "Plasma/Applet",
+    "KPlugin": {
+        "Authors": [
+            {
+                "Name": "plasmalust"
+            }
+        ],
+        "Category": "Multimedia",
+        "Description": "Ornate-framed live audio visualizer bar, fed by cava over a FIFO bridge (plasmalust-cava-bridge.service), colors driven by the active wallust palette.",
+        "Icon": "audio-x-generic",
+        "Id": "dev.plasmalust.visualizer",
+        "Name": "Plasmalust Visualizer",
+        "Version": "1.0"
+    },
+    "X-Plasma-API-Minimum-Version": "6.0"
+}

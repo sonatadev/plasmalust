@@ -1,0 +1,17 @@
+{
+    "KPackageStructure": "Plasma/Applet",
+    "KPlugin": {
+        "Authors": [
+            {
+                "Name": "plasmalust"
+            }
+        ],
+        "Category": "Multimedia",
+        "Description": "Ornate-framed now-playing panel (MPRIS via playerctl) matching the plasmalust-sysinfo widget's style, colors driven by the active wallust palette.",
+        "Icon": "audio-headphones",
+        "Id": "dev.plasmalust.mediaplayer",
+        "Name": "Plasmalust Media",
+        "Version": "1.0"
+    },
+    "X-Plasma-API-Minimum-Version": "6.0"
+}

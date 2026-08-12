@@ -1,0 +1,11 @@
+[Unit]
+Description=plasmalust cava bridge for the desktop visualizer widget
+After=pipewire.service
+
+[Service]
+ExecStart=%h/.local/bin/plasmalust-cava-bridge
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=default.target

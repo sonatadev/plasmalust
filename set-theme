@@ -77,6 +77,19 @@ sed "s/^Name=Wallust$/Name=$SCHEME_NAME/" "$SCHEME_DIR/Wallust.colors" > "$SCHEM
 plasma-apply-colorscheme "$SCHEME_NAME"
 find "$SCHEME_DIR" -maxdepth 1 -name 'Wallust-*.colors' ! -name "$SCHEME_NAME.colors" -delete
 
+# 2b. Generate a wallust-duotone dithered "portrait" of the current wallpaper for
+# the plasmalust-sysinfo desktop widget - an ordered-dither halftone reduces the
+# wallpaper to two tones, then remaps black/white to the current background/accent
+# hex so it always matches the active palette instead of being a static asset.
+BG_HEX=$(grep -m1 '^background' "$HOME/.config/kitty/theme.conf" | awk '{print $2}')
+if [ -n "$BG_HEX" ] && [ -n "$ACCENT_HEX" ] && command -v magick >/dev/null; then
+    mkdir -p "$HOME/.cache/wallust"
+    magick "$WALLPAPER" -resize 300x370^ -gravity center -extent 300x370 \
+        -colorspace Gray -ordered-dither o4x4,2 -colorspace sRGB \
+        -fill "$BG_HEX" -opaque black -fill "$ACCENT_HEX" -opaque white \
+        "$HOME/.cache/wallust/portrait-dither.png"
+fi
+
 # 3. Push the new colors to already-open terminals immediately, without waiting for
 # a new window (writes wallust's OSC sequences to every pty the user owns).
 SEQ_FILE="$HOME/.cache/wallust/sequences"

@@ -1,0 +1,22 @@
+#!/bin/bash
+# Feeds the plasmalust-visualizer widget: cava writes raw bar data to a FIFO
+# (its "raw" output method requires a reader attached or it blocks), this
+# loop drains that FIFO continuously and republishes just the latest frame
+# to a plain file, which the widget can cheaply poll without touching cava
+# or the FIFO directly.
+set -euo pipefail
+
+FIFO="$HOME/.cache/wallust/cava.fifo"
+LATEST="$HOME/.cache/wallust/cava-bars"
+CONF="$HOME/.config/cava/plasmalust-widget.conf"
+
+mkdir -p "$HOME/.cache/wallust"
+[ -p "$FIFO" ] || mkfifo "$FIFO"
+
+cava -p "$CONF" &
+CAVA_PID=$!
+trap 'kill "$CAVA_PID" 2>/dev/null' EXIT
+
+while read -r line < "$FIFO"; do
+    echo "$line" > "$LATEST"
+done

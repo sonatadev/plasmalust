@@ -1,0 +1,17 @@
+{
+    "KPackageStructure": "Plasma/Applet",
+    "KPlugin": {
+        "Authors": [
+            {
+                "Name": "plasmalust"
+            }
+        ],
+        "Category": "System Information",
+        "Description": "Ornate-framed system info panel with a wallust-duotone dithered portrait and live meters, colors driven by the active wallust palette.",
+        "Icon": "utilities-system-monitor",
+        "Id": "dev.plasmalust.sysinfo",
+        "Name": "Plasmalust Sysinfo",
+        "Version": "1.0"
+    },
+    "X-Plasma-API-Minimum-Version": "6.0"
+}
