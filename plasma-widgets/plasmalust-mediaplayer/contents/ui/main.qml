@@ -37,11 +37,15 @@ PlasmoidItem {
             const line = (stdout || "").trim();
             if (!line) {
                 root.hasPlayer = false;
+                root.positionUs = 0;
+                root.lengthUs = 0;
                 return;
             }
             const parts = line.split("::");
             if (parts.length < 7) {
                 root.hasPlayer = false;
+                root.positionUs = 0;
+                root.lengthUs = 0;
                 return;
             }
             root.hasPlayer = true;
@@ -171,12 +175,14 @@ PlasmoidItem {
 
             MeterBar {
                 Layout.fillWidth: true
+                visible: root.hasPlayer
                 segments: 24
                 value: root.lengthUs > 0 ? (root.positionUs / root.lengthUs * 100) : 0
             }
 
             RowLayout {
                 Layout.fillWidth: true
+                visible: root.hasPlayer
                 Text {
                     text: root.fmtTime(root.positionUs)
                     font.family: "monospace"

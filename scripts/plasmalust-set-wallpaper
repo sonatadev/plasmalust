@@ -1,0 +1,14 @@
+#!/bin/bash
+# Sets the desktop wallpaper to the given path and re-runs the full
+# plasmalust theming pipeline. Used by the plasmalust-wallpicker widget,
+# but works standalone too.
+set -euo pipefail
+
+WALLPAPER="$1"
+[ -f "$WALLPAPER" ] || { echo "Error: $WALLPAPER not found" >&2; exit 1; }
+
+kwriteconfig6 --file plasma-org.kde.plasma.desktop-appletsrc \
+    --group Containments --group 63 --group Wallpaper --group org.kde.image --group General \
+    --key Image "file://$WALLPAPER"
+
+exec "$HOME/.local/bin/set-theme"

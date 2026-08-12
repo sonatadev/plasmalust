@@ -13,7 +13,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BUILD_DIR=$(mktemp -d)
 trap 'rm -rf "$BUILD_DIR"' EXIT
 
-for widget in plasmalust-sysinfo plasmalust-mediaplayer plasmalust-visualizer plasmalust-procmon; do
+for widget in plasmalust-sysinfo plasmalust-mediaplayer plasmalust-visualizer plasmalust-procmon plasmalust-wallpicker; do
     cp -r "$SCRIPT_DIR/$widget" "$BUILD_DIR/$widget"
     grep -rl "/home/YOUR_USERNAME" "$BUILD_DIR/$widget" 2>/dev/null | while read -r f; do
         sed -i "s|/home/YOUR_USERNAME|$HOME|g" "$f"
@@ -32,5 +32,11 @@ mkfifo "$HOME/.cache/wallust/cava.fifo" 2>/dev/null || true
 
 systemctl --user daemon-reload
 systemctl --user enable --now plasmalust-cava-bridge.service
+
+# plasmalust-wallpicker widget dependency: applies a picked wallpaper +
+# re-runs set-theme, and keeps its thumbnail cache in sync.
+install -m755 "$SCRIPT_DIR/../scripts/plasmalust-set-wallpaper" "$HOME/.local/bin/plasmalust-set-wallpaper"
+install -m755 "$SCRIPT_DIR/../scripts/plasmalust-refresh-thumbnails" "$HOME/.local/bin/plasmalust-refresh-thumbnails"
+"$HOME/.local/bin/plasmalust-refresh-thumbnails"
 
 echo "Widgets installed. Add them via right-click desktop > Add Widgets > search \"Plasmalust\"."

@@ -107,6 +107,24 @@ if [ -f "$ICONS_CURSORS_DIR/nearest-swatch.py" ] && [ -d /usr/share/icons/Papiru
     fi
 fi
 
+# 2d. Recolor the Arch logo used as the Kickoff (app launcher) icon on the
+# top panel to match the current accent, using the same alpha-mask recolor
+# trick as an SVG/PNG logo recolor - extract the source's alpha channel,
+# flood a solid accent-colored layer, then use the alpha as a mask. Padded
+# onto a larger canvas so it isn't flush against the icon's edges (a raw
+# icon-theme-sized pixmap renders larger/less centered in the panel slot
+# than a properly-padded one).
+if [ -n "$ACCENT_HEX" ] && [ -f /usr/share/pixmaps/archlinux-logo.png ] && command -v magick >/dev/null; then
+    mkdir -p "$HOME/.cache/wallust"
+    magick /usr/share/pixmaps/archlinux-logo.png -alpha extract "$HOME/.cache/wallust/.logo-alpha.png"
+    magick -size 256x256 xc:"$ACCENT_HEX" "$HOME/.cache/wallust/.logo-color.png"
+    magick "$HOME/.cache/wallust/.logo-color.png" "$HOME/.cache/wallust/.logo-alpha.png" \
+        -alpha off -compose CopyOpacity -composite "$HOME/.cache/wallust/.logo-recolored.png"
+    magick "$HOME/.cache/wallust/.logo-recolored.png" -resize 190x190 -gravity center \
+        -background none -extent 320x320 "$HOME/.cache/wallust/panel-logo.png"
+    rm -f "$HOME/.cache/wallust/.logo-alpha.png" "$HOME/.cache/wallust/.logo-color.png" "$HOME/.cache/wallust/.logo-recolored.png"
+fi
+
 # 3. Push the new colors to already-open terminals immediately, without waiting for
 # a new window (writes wallust's OSC sequences to every pty the user owns).
 SEQ_FILE="$HOME/.cache/wallust/sequences"
@@ -208,6 +226,13 @@ fi
 # palette and warn "Unknown theme").
 if command -v bat >/dev/null; then
     bat cache --build >/dev/null 2>&1
+fi
+
+# 8b. Keep the plasmalust-wallpicker widget's thumbnail cache in sync with
+# ~/Pictures/wallpapers/ - incremental (only generates missing thumbnails),
+# so new wallpapers added via drag-drop show up next time the picker opens.
+if [ -x "$HOME/.local/bin/plasmalust-refresh-thumbnails" ]; then
+    "$HOME/.local/bin/plasmalust-refresh-thumbnails" >/dev/null 2>&1 &
 fi
 
 # 9. GRUB + login-manager theming touch root-owned system paths, so they

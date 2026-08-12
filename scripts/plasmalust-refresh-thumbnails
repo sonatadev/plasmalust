@@ -1,0 +1,34 @@
+#!/bin/bash
+# Keeps ~/.cache/wallust/thumbnails/ (and its index.json) in sync with
+# ~/Pictures/wallpapers/, for the plasmalust-wallpicker widget. Only
+# generates thumbnails that don't already exist - cheap to call on every
+# set-theme run.
+set -euo pipefail
+
+WP_DIR="$HOME/Pictures/wallpapers"
+THUMB_DIR="$HOME/.cache/wallust/thumbnails"
+mkdir -p "$THUMB_DIR"
+
+shopt -s nullglob nocaseglob
+for f in "$WP_DIR"/*.jpg "$WP_DIR"/*.jpeg "$WP_DIR"/*.png "$WP_DIR"/*.webp; do
+    base="$(basename "${f%.*}")"
+    out="$THUMB_DIR/$base.jpg"
+    [ -f "$out" ] || magick "$f" -resize 220x220^ -gravity center -extent 220x220 -quality 82 "$out" 2>/dev/null || true
+done
+
+python3 - "$WP_DIR" "$THUMB_DIR" <<'PYEOF'
+import os, sys, json
+
+wp_dir, thumb_dir = sys.argv[1], sys.argv[2]
+index = []
+for f in sorted(os.listdir(wp_dir)):
+    if not f.lower().endswith((".jpg", ".jpeg", ".png", ".webp")):
+        continue
+    base = os.path.splitext(f)[0]
+    thumb = os.path.join(thumb_dir, base + ".jpg")
+    if os.path.exists(thumb):
+        index.append({"name": base, "thumb": thumb, "original": os.path.join(wp_dir, f)})
+
+with open(os.path.join(thumb_dir, "index.json"), "w") as fh:
+    json.dump(index, fh)
+PYEOF

@@ -1,0 +1,17 @@
+{
+    "KPackageStructure": "Plasma/Applet",
+    "KPlugin": {
+        "Authors": [
+            {
+                "Name": "plasmalust"
+            }
+        ],
+        "Category": "Wallpaper",
+        "Description": "Ornate-framed wallpaper picker with a searchable thumbnail grid - clicking a wallpaper sets it and re-runs the full plasmalust theming pipeline. Colors driven by the active wallust palette.",
+        "Icon": "preferences-desktop-wallpaper",
+        "Id": "dev.plasmalust.wallpicker",
+        "Name": "Plasmalust Wallpaper Picker",
+        "Version": "1.0"
+    },
+    "X-Plasma-API-Minimum-Version": "6.0"
+}

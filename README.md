@@ -187,9 +187,30 @@ Re-run it any time you change your wallpaper.
   prompt), so this repo only does the safe color/wallpaper-level sync, not
   a layout rebuild.
 
+## Panel layout (optional, one-time)
+
+`panel-layout/apply-panel-layout.sh` does a one-time cleanup of the top
+panel: swaps Kickoff's Garuda cat logo for a wallust-recolored Arch logo
+(the recoloring itself is dynamic, handled every run by `set-theme`'s
+`# 2d.` step - this script just wires up the icon path), turns off the user
+switcher's fixed-color account avatar in favor of a plain themeable icon,
+and hides the microphone privacy indicator + Garuda System Maintenance
+tray icons (both are fixed-asset icons from their own processes, not real
+systray plasmoids - not resizable/recolorable, so hidden rather than left
+visually inconsistent). Also turns on Plasma's native floating-panel mode
+for the top panel (rounded corners, edge gap, drop shadow) - a live
+Containment property rather than a config file key, confirmed to persist
+across `plasmashell` restarts despite not showing up in any config file.
+
+Run once:
+
+```
+./panel-layout/apply-panel-layout.sh
+```
+
 ## Desktop widgets (optional)
 
-`plasma-widgets/` has four ornate-framed Plasma desktop widgets, styled to
+`plasma-widgets/` has five ornate-framed Plasma desktop widgets, styled to
 match a Hyprland/conky-rice aesthetic, colors bound live to `Kirigami.Theme`
 so they re-theme automatically on every `set-theme` run - no separate
 wallust template needed:
@@ -203,8 +224,14 @@ wallust template needed:
 - **Plasmalust Visualizer** - live audio bars via `cava`. Needs the bridge
   service below.
 - **Plasmalust Processes** - top processes by CPU (`ps`).
+- **Plasmalust Wallpaper Picker** - searchable thumbnail grid of
+  `~/Pictures/wallpapers/`; clicking one sets it and re-runs the full
+  `set-theme` pipeline (`scripts/plasmalust-set-wallpaper`). Thumbnails are
+  cached and kept in sync automatically (`scripts/plasmalust-refresh-thumbnails`,
+  called incrementally at the end of every `set-theme` run).
 
-Install/upgrade all four, plus the visualizer's cava bridge service:
+Install/upgrade all five, plus the visualizer's cava bridge service and the
+wallpaper picker's helper scripts:
 
 ```
 ./plasma-widgets/install-widgets.sh
