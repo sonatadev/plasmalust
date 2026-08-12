@@ -12,6 +12,20 @@ PlasmoidItem {
     Layout.preferredWidth: 460
     Layout.preferredHeight: 260
 
+    readonly property int lineHeight: 28
+    property bool expanded: false
+    property real revealHeight: expanded ? height : lineHeight
+
+    Behavior on revealHeight {
+        NumberAnimation { duration: 160; easing.type: Easing.OutQuad }
+    }
+    onRevealHeightChanged: frame.requestPaint()
+
+    HoverHandler {
+        id: hoverWatch
+        onHoveredChanged: root.expanded = hovered
+    }
+
     property var wallpapers: []
     property string filterText: ""
     property string applyingName: ""
@@ -58,12 +72,13 @@ PlasmoidItem {
             const accent = Kirigami.Theme.highlightColor;
             const bg = Kirigami.Theme.backgroundColor;
             const m = 6, fl = 18;
+            const h = root.revealHeight;
 
             ctx.fillStyle = Qt.rgba(bg.r, bg.g, bg.b, 0.78);
             ctx.strokeStyle = Qt.rgba(accent.r, accent.g, accent.b, 0.6);
             ctx.lineWidth = 1.2;
-            ctx.fillRect(m, m, width - 2 * m, height - 2 * m);
-            ctx.strokeRect(m, m, width - 2 * m, height - 2 * m);
+            ctx.fillRect(m, m, width - 2 * m, h - 2 * m);
+            ctx.strokeRect(m, m, width - 2 * m, h - 2 * m);
 
             ctx.strokeStyle = accent;
             ctx.lineWidth = 2;
@@ -80,8 +95,8 @@ PlasmoidItem {
             }
             corner(m, m, 1, 1);
             corner(width - m, m, -1, 1);
-            corner(m, height - m, 1, -1);
-            corner(width - m, height - m, -1, -1);
+            corner(m, h - m, 1, -1);
+            corner(width - m, h - m, -1, -1);
         }
     }
 
@@ -91,32 +106,43 @@ PlasmoidItem {
         function onBackgroundColorChanged() { frame.requestPaint(); }
     }
 
+    RowLayout {
+        height: root.lineHeight
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.top: parent.top
+        anchors.margins: 10
+        spacing: 10
+
+        Text {
+            text: "wallpapers"
+            font.family: "monospace"
+            font.pixelSize: 14
+            font.bold: true
+            color: Kirigami.Theme.textColor
+        }
+        Item { Layout.fillWidth: true }
+        Text {
+            visible: root.applyingName !== ""
+            text: "applying " + root.applyingName + "..."
+            font.family: "monospace"
+            font.pixelSize: 11
+            color: Kirigami.Theme.highlightColor
+        }
+    }
+
     ColumnLayout {
-        anchors.fill: parent
-        anchors.margins: 16
+        visible: root.expanded
+        anchors.top: parent.top
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+        anchors.topMargin: root.lineHeight + 14
+        anchors.leftMargin: 16
+        anchors.rightMargin: 16
+        anchors.bottomMargin: 16
         spacing: 8
         clip: true
-
-        RowLayout {
-            Layout.fillWidth: true
-            spacing: 10
-
-            Text {
-                text: "wallpapers"
-                font.family: "monospace"
-                font.pixelSize: 15
-                font.bold: true
-                color: Kirigami.Theme.textColor
-            }
-            Item { Layout.fillWidth: true }
-            Text {
-                visible: root.applyingName !== ""
-                text: "applying " + root.applyingName + "..."
-                font.family: "monospace"
-                font.pixelSize: 11
-                color: Kirigami.Theme.highlightColor
-            }
-        }
 
         Rectangle {
             Layout.fillWidth: true
