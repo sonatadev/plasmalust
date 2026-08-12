@@ -1,0 +1,35 @@
+#!/bin/bash
+# Themed picker for the fun terminal toys - a quick-launcher menu in the
+# same spirit as the "exit/kill/st/fw/dc/..." corner menus seen in
+# Hyprland/conky rices, built on fzf (already wallust-themed via
+# ~/.cache/wallust/fzf.sh, see .bashrc).
+set -euo pipefail
+
+declare -A TOYS=(
+    [fetch]="fastfetch"
+    [pride]="hyfetch"
+    [matrix]="unimatrix"
+    [fire]="aafire"
+    [aquarium]="asciiquarium"
+    [clock]="peaclock"
+    [map]="mapscii"
+    [monitor]="btop"
+    [audio]="cava"
+    [banner]="__banner"
+)
+
+__banner() {
+    read -rp "text> " text
+    figlet "${text:-plasmalust}"
+    read -rn1 -p "-- press any key --"
+}
+
+choice=$(printf '%s\n' "${!TOYS[@]}" | sort | fzf --prompt="toybox> " --height=~40% --border --reverse)
+[ -n "$choice" ] || exit 0
+
+cmd="${TOYS[$choice]}"
+if [ "$cmd" = "__banner" ]; then
+    __banner
+else
+    exec "$cmd"
+fi

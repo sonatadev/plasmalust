@@ -229,6 +229,17 @@ seen at your global scale factor) in the containment's own config block:
 by hand in the UI works fine - this only matters if you're scripting
 placement.
 
+## Toybox (optional)
+
+`toybox/plasmalust-toybox` is a themed `fzf` picker for a handful of fun
+terminal toys (`fastfetch`, `hyfetch`, `unimatrix`, `aafire`,
+`asciiquarium`, `peaclock`, `mapscii`, `btop`, `cava`, plus a `figlet`
+banner prompt) - the same idea as the little "exit/kill/st/..." corner
+menus seen in a lot of Hyprland/conky rices. It rides on `fzf`'s existing
+wallust theming (`~/.cache/wallust/fzf.sh`), so no separate template is
+needed. Install the packages it wraps, symlink or copy the script to
+`~/.local/bin/plasmalust-toybox`, alias `toybox` to it if you want.
+
 ## System-level extras (optional, sudo required)
 
 GRUB and login-screen theming touch root-owned system paths. `set-theme`
