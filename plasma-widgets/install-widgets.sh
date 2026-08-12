@@ -17,7 +17,7 @@ for widget in plasmalust-sysinfo plasmalust-mediaplayer plasmalust-visualizer pl
     cp -r "$SCRIPT_DIR/$widget" "$BUILD_DIR/$widget"
     grep -rl "/home/YOUR_USERNAME" "$BUILD_DIR/$widget" 2>/dev/null | while read -r f; do
         sed -i "s|/home/YOUR_USERNAME|$HOME|g" "$f"
-    done
+    done || true
     kpackagetool6 --type Plasma/Applet --upgrade "$BUILD_DIR/$widget" 2>/dev/null \
         || kpackagetool6 --type Plasma/Applet --install "$BUILD_DIR/$widget"
 done

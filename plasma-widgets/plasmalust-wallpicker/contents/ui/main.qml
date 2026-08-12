@@ -9,18 +9,8 @@ PlasmoidItem {
     id: root
 
     Plasmoid.backgroundHints: PlasmaCore.Types.NoBackground
-    Layout.preferredWidth: 640
-    Layout.preferredHeight: 560
-
-    property bool collapsed: true
-    readonly property int collapsedHeight: 56
-
-    width: Layout.preferredWidth
-    height: collapsed ? collapsedHeight : Layout.preferredHeight
-
-    Behavior on height {
-        NumberAnimation { duration: 150; easing.type: Easing.OutQuad }
-    }
+    Layout.preferredWidth: 460
+    Layout.preferredHeight: 260
 
     property var wallpapers: []
     property string filterText: ""
@@ -111,51 +101,12 @@ PlasmoidItem {
             Layout.fillWidth: true
             spacing: 10
 
-            Item {
-                width: 16
-                height: 16
-                Canvas {
-                    id: chevron
-                    anchors.fill: parent
-                    onPaint: {
-                        const ctx = getContext("2d");
-                        ctx.reset();
-                        ctx.fillStyle = Kirigami.Theme.highlightColor;
-                        ctx.beginPath();
-                        if (root.collapsed) {
-                            // pointing right
-                            ctx.moveTo(5, 2); ctx.lineTo(12, 8); ctx.lineTo(5, 14);
-                        } else {
-                            // pointing down
-                            ctx.moveTo(2, 5); ctx.lineTo(8, 12); ctx.lineTo(14, 5);
-                        }
-                        ctx.closePath();
-                        ctx.fill();
-                    }
-                }
-                Connections {
-                    target: root
-                    function onCollapsedChanged() { chevron.requestPaint(); }
-                }
-                MouseArea {
-                    anchors.fill: parent
-                    anchors.margins: -4
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: root.collapsed = !root.collapsed
-                }
-            }
             Text {
                 text: "wallpapers"
                 font.family: "monospace"
                 font.pixelSize: 15
                 font.bold: true
                 color: Kirigami.Theme.textColor
-                MouseArea {
-                    anchors.fill: parent
-                    anchors.margins: -4
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: root.collapsed = !root.collapsed
-                }
             }
             Item { Layout.fillWidth: true }
             Text {
@@ -168,7 +119,6 @@ PlasmoidItem {
         }
 
         Rectangle {
-            visible: !root.collapsed
             Layout.fillWidth: true
             Layout.preferredHeight: 30
             radius: 4
@@ -190,7 +140,6 @@ PlasmoidItem {
 
         GridView {
             id: grid
-            visible: !root.collapsed
             Layout.fillWidth: true
             Layout.fillHeight: true
             cellWidth: 96
