@@ -13,7 +13,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BUILD_DIR=$(mktemp -d)
 trap 'rm -rf "$BUILD_DIR"' EXIT
 
-for widget in plasmalust-sysinfo plasmalust-mediaplayer plasmalust-visualizer plasmalust-procmon plasmalust-wallpicker; do
+for widget in plasmalust-sysinfo plasmalust-mediaplayer plasmalust-visualizer plasmalust-procmon plasmalust-wallpicker plasmalust-menu; do
     cp -r "$SCRIPT_DIR/$widget" "$BUILD_DIR/$widget"
     grep -rl "/home/YOUR_USERNAME" "$BUILD_DIR/$widget" 2>/dev/null | while read -r f; do
         sed -i "s|/home/YOUR_USERNAME|$HOME|g" "$f"

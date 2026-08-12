@@ -1,0 +1,17 @@
+{
+    "KPackageStructure": "Plasma/Applet",
+    "KPlugin": {
+        "Authors": [
+            {
+                "Name": "plasmalust"
+            }
+        ],
+        "Category": "System",
+        "Description": "Ornate-framed dropdown quick-launcher menu (apps, terminal toys, power actions) - the same idea as the corner menu list seen in a lot of Hyprland/conky rices. Colors driven by the active wallust palette.",
+        "Icon": "application-menu",
+        "Id": "dev.plasmalust.menu",
+        "Name": "Plasmalust Menu",
+        "Version": "1.0"
+    },
+    "X-Plasma-API-Minimum-Version": "6.0"
+}
