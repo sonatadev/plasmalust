@@ -205,23 +205,20 @@ PlasmoidItem {
 
                 Item { Layout.fillWidth: true }
 
-                QQC2.Label {
-                    text: "⏮"
-                    font.pixelSize: 18
-                    color: Kirigami.Theme.textColor
-                    MouseArea { anchors.fill: parent; onClicked: root.control("previous") }
+                TransportButton {
+                    kind: "previous"
+                    iconColor: Kirigami.Theme.textColor
+                    onClicked: root.control("previous")
                 }
-                QQC2.Label {
-                    text: root.playbackStatus === "Playing" ? "⏸" : "▶"
-                    font.pixelSize: 18
-                    color: Kirigami.Theme.highlightColor
-                    MouseArea { anchors.fill: parent; onClicked: root.control("play-pause") }
+                TransportButton {
+                    kind: root.playbackStatus === "Playing" ? "pause" : "play"
+                    iconColor: Kirigami.Theme.highlightColor
+                    onClicked: root.control("play-pause")
                 }
-                QQC2.Label {
-                    text: "⏭"
-                    font.pixelSize: 18
-                    color: Kirigami.Theme.textColor
-                    MouseArea { anchors.fill: parent; onClicked: root.control("next") }
+                TransportButton {
+                    kind: "next"
+                    iconColor: Kirigami.Theme.textColor
+                    onClicked: root.control("next")
                 }
 
                 Item { Layout.fillWidth: true }
