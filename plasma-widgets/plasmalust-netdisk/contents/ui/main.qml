@@ -9,7 +9,7 @@ PlasmoidItem {
 
     Plasmoid.backgroundHints: PlasmaCore.Types.NoBackground
     Layout.preferredWidth: 320
-    Layout.preferredHeight: 170
+    Layout.preferredHeight: 210
 
     property string iface: ""
     property string disk: ""
@@ -137,9 +137,9 @@ PlasmoidItem {
         spacing: 10
 
         Text {
-            text: root.iface ? ("net/disk  ·  " + root.iface) : "net/disk"
+            text: root.iface ? ("network  ·  " + root.iface) : "network"
             font.family: "monospace"
-            font.pixelSize: 14
+            font.pixelSize: 13
             font.bold: true
             color: Kirigami.Theme.textColor
         }
@@ -160,6 +160,28 @@ PlasmoidItem {
             Text { text: "up"; font.family: "monospace"; font.pixelSize: 11; font.bold: true; color: Kirigami.Theme.highlightColor }
             Text { text: root.downSpeed; font.family: "monospace"; font.pixelSize: 16; color: Kirigami.Theme.textColor }
             Text { text: root.upSpeed; font.family: "monospace"; font.pixelSize: 16; color: Kirigami.Theme.textColor }
+        }
+
+        Text {
+            Layout.topMargin: 6
+            text: root.disk ? ("disk  ·  " + root.disk) : "disk"
+            font.family: "monospace"
+            font.pixelSize: 13
+            font.bold: true
+            color: Kirigami.Theme.textColor
+        }
+        Rectangle {
+            Layout.fillWidth: true
+            Layout.preferredHeight: 1
+            Layout.bottomMargin: 2
+            color: Qt.rgba(Kirigami.Theme.highlightColor.r, Kirigami.Theme.highlightColor.g, Kirigami.Theme.highlightColor.b, 0.4)
+        }
+
+        GridLayout {
+            Layout.fillWidth: true
+            columns: 2
+            rowSpacing: 6
+            columnSpacing: 18
 
             Text { text: "read"; font.family: "monospace"; font.pixelSize: 11; font.bold: true; color: Kirigami.Theme.highlightColor }
             Text { text: "write"; font.family: "monospace"; font.pixelSize: 11; font.bold: true; color: Kirigami.Theme.highlightColor }
