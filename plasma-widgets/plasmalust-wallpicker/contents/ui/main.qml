@@ -12,7 +12,8 @@ PlasmoidItem {
     Layout.preferredWidth: 460
     Layout.preferredHeight: 260
 
-    readonly property int lineHeight: 28
+    readonly property int frameMargin: 6
+    readonly property int lineHeight: 34
     property bool expanded: false
     property real revealHeight: expanded ? height : lineHeight
 
@@ -107,17 +108,19 @@ PlasmoidItem {
     }
 
     RowLayout {
-        height: root.lineHeight
+        height: root.lineHeight - 2 * root.frameMargin
         anchors.left: parent.left
+        anchors.leftMargin: root.frameMargin + 8
         anchors.right: parent.right
+        anchors.rightMargin: root.frameMargin + 8
         anchors.top: parent.top
-        anchors.margins: 10
+        anchors.topMargin: root.frameMargin
         spacing: 10
 
         Text {
             text: "wallpapers"
             font.family: "monospace"
-            font.pixelSize: 14
+            font.pixelSize: 13
             font.bold: true
             color: Kirigami.Theme.textColor
         }
