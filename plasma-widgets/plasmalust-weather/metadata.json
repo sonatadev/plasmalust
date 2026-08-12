@@ -1,0 +1,17 @@
+{
+    "KPackageStructure": "Plasma/Applet",
+    "KPlugin": {
+        "Authors": [
+            {
+                "Name": "plasmalust"
+            }
+        ],
+        "Category": "Weather",
+        "Description": "Ornate-framed current weather panel (via wttr.in, no API key needed), colors driven by the active wallust palette.",
+        "Icon": "weather-clear",
+        "Id": "dev.plasmalust.weather",
+        "Name": "Plasmalust Weather",
+        "Version": "1.0"
+    },
+    "X-Plasma-API-Minimum-Version": "6.0"
+}

@@ -73,6 +73,9 @@ PlasmoidItem {
             const accent = Kirigami.Theme.highlightColor;
             const bg = Kirigami.Theme.backgroundColor;
             const m = 6, fl = 18;
+
+            ctx.shadowColor = Qt.rgba(accent.r, accent.g, accent.b, 0.55);
+            ctx.shadowBlur = 10;
             const h = root.revealHeight;
 
             ctx.fillStyle = Qt.rgba(bg.r, bg.g, bg.b, 0.78);

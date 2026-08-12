@@ -1,0 +1,17 @@
+{
+    "KPackageStructure": "Plasma/Applet",
+    "KPlugin": {
+        "Authors": [
+            {
+                "Name": "plasmalust"
+            }
+        ],
+        "Category": "Date and Time",
+        "Description": "Ornate-framed big digital clock + date, colors driven by the active wallust palette.",
+        "Icon": "clock",
+        "Id": "dev.plasmalust.clock",
+        "Name": "Plasmalust Clock",
+        "Version": "1.0"
+    },
+    "X-Plasma-API-Minimum-Version": "6.0"
+}

@@ -20,6 +20,10 @@ Item {
                 color: (index / meter.segments * 100) < meter.value
                     ? Kirigami.Theme.highlightColor
                     : Qt.rgba(Kirigami.Theme.textColor.r, Kirigami.Theme.textColor.g, Kirigami.Theme.textColor.b, 0.16)
+
+                Behavior on color {
+                    ColorAnimation { duration: 300; easing.type: Easing.OutQuad }
+                }
             }
         }
     }

@@ -8,28 +8,25 @@ PlasmoidItem {
     id: root
 
     Plasmoid.backgroundHints: PlasmaCore.Types.NoBackground
-    Layout.preferredWidth: 460
-    Layout.preferredHeight: 140
+    Layout.preferredWidth: 320
+    Layout.preferredHeight: 160
 
-    property var bars: []
-
-    RunCommand {
-        id: runner
-    }
+    property string timeStr: ""
+    property string dateStr: ""
 
     function refresh() {
-        runner.exec("cat /home/YOUR_USERNAME/.cache/wallust/cava-bars", function (stdout) {
-            const line = (stdout || "").trim();
-            if (!line) return;
-            const vals = line.split(";").filter(s => s.length > 0).map(Number);
-            if (vals.length) root.bars = vals;
-        });
+        const now = new Date();
+        const pad = n => n.toString().padStart(2, "0");
+        root.timeStr = pad(now.getHours()) + ":" + pad(now.getMinutes()) + ":" + pad(now.getSeconds());
+        const days = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+        const months = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
+        root.dateStr = days[now.getDay()] + ", " + months[now.getMonth()] + " " + now.getDate() + " " + now.getFullYear();
     }
 
     Component.onCompleted: refresh()
 
     Timer {
-        interval: 90
+        interval: 1000
         running: true
         repeat: true
         onTriggered: root.refresh()
@@ -43,12 +40,12 @@ PlasmoidItem {
             ctx.reset();
             const accent = Kirigami.Theme.highlightColor;
             const bg = Kirigami.Theme.backgroundColor;
-            const m = 6, fl = 16;
+            const m = 6, fl = 18;
 
             ctx.shadowColor = Qt.rgba(accent.r, accent.g, accent.b, 0.55);
             ctx.shadowBlur = 10;
 
-            ctx.fillStyle = Qt.rgba(bg.r, bg.g, bg.b, 0.72);
+            ctx.fillStyle = Qt.rgba(bg.r, bg.g, bg.b, 0.78);
             ctx.strokeStyle = Qt.rgba(accent.r, accent.g, accent.b, 0.6);
             ctx.lineWidth = 1.2;
             ctx.fillRect(m, m, width - 2 * m, height - 2 * m);
@@ -80,27 +77,24 @@ PlasmoidItem {
         function onBackgroundColorChanged() { frame.requestPaint(); }
     }
 
-    RowLayout {
-        anchors.fill: parent
-        anchors.margins: 22
+    ColumnLayout {
+        anchors.centerIn: parent
         spacing: 4
-        clip: true
 
-        Repeater {
-            model: root.bars.length
-            delegate: Rectangle {
-                required property int index
-                Layout.fillWidth: true
-                Layout.alignment: Qt.AlignBottom
-                Layout.preferredHeight: Math.max(3, (root.bars[index] / 100) * parent.height)
-                radius: 1
-                color: Kirigami.Theme.highlightColor
-                opacity: 0.55 + 0.45 * (root.bars[index] / 100)
-
-                Behavior on Layout.preferredHeight {
-                    NumberAnimation { duration: 80; easing.type: Easing.OutQuad }
-                }
-            }
+        Text {
+            Layout.alignment: Qt.AlignHCenter
+            text: root.timeStr
+            font.family: "monospace"
+            font.pixelSize: 46
+            font.bold: true
+            color: Kirigami.Theme.textColor
+        }
+        Text {
+            Layout.alignment: Qt.AlignHCenter
+            text: root.dateStr
+            font.family: "monospace"
+            font.pixelSize: 14
+            color: Kirigami.Theme.highlightColor
         }
     }
 }

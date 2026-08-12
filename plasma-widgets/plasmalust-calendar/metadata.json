@@ -1,0 +1,17 @@
+{
+    "KPackageStructure": "Plasma/Applet",
+    "KPlugin": {
+        "Authors": [
+            {
+                "Name": "plasmalust"
+            }
+        ],
+        "Category": "Date and Time",
+        "Description": "Ornate-framed month calendar grid, today highlighted, colors driven by the active wallust palette.",
+        "Icon": "view-calendar",
+        "Id": "dev.plasmalust.calendar",
+        "Name": "Plasmalust Calendar",
+        "Version": "1.0"
+    },
+    "X-Plasma-API-Minimum-Version": "6.0"
+}

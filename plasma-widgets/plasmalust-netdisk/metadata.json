@@ -1,0 +1,17 @@
+{
+    "KPackageStructure": "Plasma/Applet",
+    "KPlugin": {
+        "Authors": [
+            {
+                "Name": "plasmalust"
+            }
+        ],
+        "Category": "System Information",
+        "Description": "Ornate-framed live network (up/down) and disk I/O speed panel, colors driven by the active wallust palette.",
+        "Icon": "network-wired",
+        "Id": "dev.plasmalust.netdisk",
+        "Name": "Plasmalust Net/Disk",
+        "Version": "1.0"
+    },
+    "X-Plasma-API-Minimum-Version": "6.0"
+}
