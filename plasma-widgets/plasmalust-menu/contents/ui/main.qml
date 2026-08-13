@@ -51,8 +51,26 @@ PlasmoidItem {
                 ctx.lineTo(x, y);
                 ctx.lineTo(x + dx * fl, y);
                 ctx.stroke();
+
                 ctx.beginPath();
-                ctx.arc(x + dx * 5, y + dy * 5, 2, 0, Math.PI * 2);
+                ctx.arc(x, y + dy * fl, 2.5, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.arc(x + dx * fl, y, 2.5, 0, Math.PI * 2);
+                ctx.stroke();
+
+                const s = 8, cx = x + dx * s, cy = y + dy * s;
+                ctx.beginPath();
+                ctx.moveTo(cx, cy - 3.5);
+                ctx.lineTo(cx + 3.5, cy);
+                ctx.lineTo(cx, cy + 3.5);
+                ctx.lineTo(cx - 3.5, cy);
+                ctx.closePath();
+                ctx.fillStyle = accent;
+                ctx.fill();
+
+                ctx.beginPath();
+                ctx.arc(x + dx * 3, y + dy * 3, 1.8, 0, Math.PI * 2);
                 ctx.fillStyle = accent;
                 ctx.fill();
             }
