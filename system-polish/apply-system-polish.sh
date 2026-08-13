@@ -32,9 +32,9 @@
 #   alive in the background.
 # - yazi: installs a yazi.desktop (kitty --single-instance -e yazi) and sets
 #   it as the default handler for inode/directory via xdg-mime, so it's the
-#   system default file manager. Also adds a Meta+E global shortcut - note
-#   this requires kglobalaccel (hosted inside kded6) to re-scan shortcuts,
-#   which only happens on next login/kded6 restart; it's saved either way.
+#   system default file manager. Its Meta+E shortcut is set up by the
+#   plasmalust-shortcuts KWin script below, not a kglobalshortcutsrc
+#   "_launch" binding - see that step's note for why.
 # - kitty pre-warm: autostarts a hidden `kitty --single-instance --start-as=
 #   hidden` at login. Single-instance mode already makes every window after
 #   the first fast, but with nothing running yet, the *first* window of a
@@ -62,6 +62,20 @@
 #   running widget instance from an external global shortcut - same
 #   wallust-templated-QML-via-qml6 approach as the wallpaper overlay
 #   instead, sharing the sed step above for the same reason.
+# - plasmalust-shortcuts KWin script: registers Meta+X/O/E (menu overlay,
+#   wallpaper overlay, yazi) as declarative ShortcutHandlers instead of the
+#   standard kglobalshortcutsrc "_launch" desktop-file mechanism used for
+#   kitty's Meta+T. That mechanism was tried first for all three and
+#   looked entirely correct - kglobalaccel showed each one registered,
+#   active, with the right keycode, and invoking it over D-Bus launched
+#   the app fine - but after a real logout/login the physical keypress
+#   never reached kglobalaccel, meaning kwin_wayland's own compositor-side
+#   key grab wasn't in sync with kglobalaccel's registry for these
+#   specific entries. KWin-script ShortcutHandlers don't go through that
+#   path (already proven reliable for the Meta+Shift+Arrow resize
+#   shortcuts), so this runs the same launch commands through one of
+#   those instead, via the same executable DataSource pattern the popups
+#   already use internally to shell out.
 # - krohnkite: adds the qml6 resourceClass (org.qt-project.qml, shared by
 #   both overlay popups above) to krohnkite's own ignoreClass config, so it
 #   never manages these windows at all - not tiled, not floated-and-
@@ -132,7 +146,6 @@ update-desktop-database "$HOME/.local/share/applications" 2>/dev/null || true
 cp "$SCRIPT_DIR/../dotfiles/yazi.desktop" "$HOME/.local/share/applications/yazi.desktop"
 update-desktop-database "$HOME/.local/share/applications" 2>/dev/null || true
 xdg-mime default yazi.desktop inode/directory
-kwriteconfig6 --file kglobalshortcutsrc --group "services" --group "yazi.desktop" --key "_launch" "Meta+E,Meta+E,Yazi"
 
 # 6. kitty pre-warm autostart (see note above)
 mkdir -p "$HOME/.config/autostart"
@@ -151,15 +164,19 @@ qdbus6 org.kde.KWin /KWin reconfigure
 install -m755 "$SCRIPT_DIR/../scripts/plasmalust-wallpaper-overlay" "$HOME/.local/bin/plasmalust-wallpaper-overlay"
 cp "$SCRIPT_DIR/../dotfiles/plasmalust-wallpaper-overlay.desktop" "$HOME/.local/share/applications/plasmalust-wallpaper-overlay.desktop"
 update-desktop-database "$HOME/.local/share/applications" 2>/dev/null || true
-kwriteconfig6 --file kglobalshortcutsrc --group "services" --group "plasmalust-wallpaper-overlay.desktop" --key "_launch" "Meta+O,Meta+O,Plasmalust Wallpapers"
 
 # 9. Menu overlay (see note above)
 install -m755 "$SCRIPT_DIR/../scripts/plasmalust-menu-overlay" "$HOME/.local/bin/plasmalust-menu-overlay"
 cp "$SCRIPT_DIR/../dotfiles/plasmalust-menu-overlay.desktop" "$HOME/.local/share/applications/plasmalust-menu-overlay.desktop"
 update-desktop-database "$HOME/.local/share/applications" 2>/dev/null || true
-kwriteconfig6 --file kglobalshortcutsrc --group "services" --group "plasmalust-menu-overlay.desktop" --key "_launch" "Meta+X,Meta+X,Plasmalust Menu"
 
-# 10. krohnkite: fully ignore the qml6 popup overlays instead of managing
+# 10. plasmalust-shortcuts KWin script: Meta+X/O/E (see note above)
+kpackagetool6 --type KWin/Script --upgrade "$SCRIPT_DIR/../kwin-scripts/plasmalust-shortcuts" 2>/dev/null \
+    || kpackagetool6 --type KWin/Script --install "$SCRIPT_DIR/../kwin-scripts/plasmalust-shortcuts"
+kwriteconfig6 --file kwinrc --group Plugins --key plasmalust-shortcutsEnabled --type bool true
+qdbus6 org.kde.KWin /KWin reconfigure
+
+# 11. krohnkite: fully ignore the qml6 popup overlays instead of managing
 # them (see note above). Krohnkite's own built-in default ignore list is
 # used as the baseline if the key isn't set yet, so this doesn't clobber
 # it - kwriteconfig6 always writes an explicit value, which would

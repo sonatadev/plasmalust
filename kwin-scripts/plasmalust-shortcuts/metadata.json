@@ -1,0 +1,18 @@
+{
+    "KPackageStructure": "KWin/Script",
+    "KPlugin": {
+        "Name": "Plasmalust Shortcuts",
+        "Description": "Meta+X/O/E app-launcher shortcuts (menu overlay, wallpaper overlay, yazi)",
+        "Id": "plasmalust-shortcuts",
+        "Version": "1.0",
+        "License": "MIT",
+        "Authors": [
+            {
+                "Name": "plasmalust"
+            }
+        ]
+    },
+    "X-Plasma-API": "declarativescript",
+    "X-Plasma-API-Minimum-Version": "6.0",
+    "X-Plasma-MainScript": "ui/main.qml"
+}
