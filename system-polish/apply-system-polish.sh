@@ -22,6 +22,14 @@
 # - KWin window rule: makes Spotify's window translucent (blurred behind,
 #   via the already-enabled blur effect) so it matches the rest of the
 #   translucent/blurred system chrome.
+# - kitty: user-level .desktop override adding --single-instance. New OS
+#   windows are opened in an already-running kitty process (shares its GPU
+#   sprite cache) instead of a full cold start - measured ~270ms cold vs
+#   ~25ms warm. The Meta+T global shortcut launches kitty.desktop directly
+#   (see kglobalshortcutsrc), so this one file covers the shortcut, the app
+#   launcher, and the taskbar icon. First open with no kitty running yet is
+#   still a cold start - single-instance doesn't keep a window-less process
+#   alive in the background.
 set -euo pipefail
 
 KVANTUM_SRC_THEME="/usr/share/Kvantum/KvArcDark/KvArcDark.svg"
@@ -67,6 +75,12 @@ if [[ ",$EXISTING_RULES," != *",Spotify,"* ]]; then
 fi
 
 qdbus6 org.kde.KWin /KWin reconfigure
+
+# 4. kitty: single-instance new windows (see note above)
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+mkdir -p "$HOME/.local/share/applications"
+cp "$SCRIPT_DIR/../dotfiles/kitty.desktop" "$HOME/.local/share/applications/kitty.desktop"
+update-desktop-database "$HOME/.local/share/applications" 2>/dev/null || true
 
 echo "System polish applied. Run set-theme once to render Kvantum's wallust colors,"
 echo "then restart plasmashell/relaunch Dolphin and Spotify to pick everything up."
