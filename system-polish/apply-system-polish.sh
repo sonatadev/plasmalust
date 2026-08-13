@@ -62,6 +62,20 @@
 #   running widget instance from an external global shortcut - same
 #   wallust-templated-QML-via-qml6 approach as the wallpaper overlay
 #   instead, sharing the sed step above for the same reason.
+# - krohnkite: adds the qml6 resourceClass (org.qt-project.qml, shared by
+#   both overlay popups above) to krohnkite's own ignoreClass config, so it
+#   never manages these windows at all - not tiled, not floated-and-
+#   resized either. floatingClass was tried first: krohnkite still
+#   captures a "floatGeometry" snapshot for floated windows and re-commits
+#   it on every layout pass, and that snapshot is taken from the window's
+#   still-negotiating initial Wayland geometry (before the popup's real
+#   content size settles), so it forced the popup to a wrong, large,
+#   half-workarea size every time. ignoreClass skips krohnkite's window
+#   management entirely (confirmed via its manage() function, gated on
+#   window.shouldIgnore), leaving sizing purely up to the QML client -
+#   which is what a small popup needs. Before making non-resizable, this
+#   was also tried, which raced krohnkite's tile-vs-float decision against
+#   the popup's content layout settling.
 set -euo pipefail
 
 KVANTUM_SRC_THEME="/usr/share/Kvantum/KvArcDark/KvArcDark.svg"
@@ -144,6 +158,21 @@ install -m755 "$SCRIPT_DIR/../scripts/plasmalust-menu-overlay" "$HOME/.local/bin
 cp "$SCRIPT_DIR/../dotfiles/plasmalust-menu-overlay.desktop" "$HOME/.local/share/applications/plasmalust-menu-overlay.desktop"
 update-desktop-database "$HOME/.local/share/applications" 2>/dev/null || true
 kwriteconfig6 --file kglobalshortcutsrc --group "services" --group "plasmalust-menu-overlay.desktop" --key "_launch" "Meta+X,Meta+X,Plasmalust Menu"
+
+# 10. krohnkite: fully ignore the qml6 popup overlays instead of managing
+# them (see note above). Krohnkite's own built-in default ignore list is
+# used as the baseline if the key isn't set yet, so this doesn't clobber
+# it - kwriteconfig6 always writes an explicit value, which would
+# otherwise silently take over from krohnkite's hardcoded JS fallback.
+KROHNKITE_DEFAULT_IGNORE="krunner,yakuake,spectacle,kded5,xwaylandvideobridge,plasmashell,ksplashqml,org.kde.plasmashell,org.kde.polkit-kde-authentication-agent-1,org.kde.kruler,kruler,kwin_wayland,ksmserver-logout-greeter"
+EXISTING_IGNORE_CLASS=$(kreadconfig6 --file kwinrc --group "Script-krohnkite" --key "ignoreClass")
+if [ -z "$EXISTING_IGNORE_CLASS" ]; then
+    EXISTING_IGNORE_CLASS="$KROHNKITE_DEFAULT_IGNORE"
+fi
+if [[ ",$EXISTING_IGNORE_CLASS," != *",org.qt-project.qml,"* ]]; then
+    kwriteconfig6 --file kwinrc --group "Script-krohnkite" --key "ignoreClass" "$EXISTING_IGNORE_CLASS,org.qt-project.qml"
+fi
+qdbus6 org.kde.KWin /KWin reconfigure
 
 echo "System polish applied. Run set-theme once to render Kvantum's wallust colors,"
 echo "then restart plasmashell/relaunch Dolphin and Spotify to pick everything up."
