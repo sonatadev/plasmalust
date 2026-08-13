@@ -1,0 +1,18 @@
+{
+    "KPackageStructure": "KWin/Script",
+    "KPlugin": {
+        "Name": "Plasmalust Resize",
+        "Description": "Meta+Shift+Arrow resizes the active window (Hyprland-style), tiled or floating",
+        "Id": "plasmalust-resize",
+        "Version": "1.0",
+        "License": "MIT",
+        "Authors": [
+            {
+                "Name": "plasmalust"
+            }
+        ]
+    },
+    "X-Plasma-API": "declarativescript",
+    "X-Plasma-API-Minimum-Version": "6.0",
+    "X-Plasma-MainScript": "ui/main.qml"
+}

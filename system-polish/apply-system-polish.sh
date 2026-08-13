@@ -42,6 +42,13 @@
 #   measured). A hidden warm instance from login means there's never a
 #   genuine "first" window from the user's perspective - measured ~29ms
 #   even opening on a completely empty desktop.
+# - plasmalust-resize KWin script: Meta+Shift+Arrow resizes the active
+#   window (Hyprland-style), floating or tiled. Frees up Meta+Shift+Left/
+#   Right from KWin's built-in "move window to next/previous screen"
+#   (rarely used on a single-screen laptop) - like the yazi shortcut
+#   above, live reassignment of an already-loaded KWin shortcut doesn't
+#   take effect until next login even via direct kglobalaccel DBus calls,
+#   confirmed by testing; it's saved correctly either way.
 set -euo pipefail
 
 KVANTUM_SRC_THEME="/usr/share/Kvantum/KvArcDark/KvArcDark.svg"
@@ -104,6 +111,14 @@ kwriteconfig6 --file kglobalshortcutsrc --group "services" --group "yazi.desktop
 mkdir -p "$HOME/.config/autostart"
 cp "$SCRIPT_DIR/../dotfiles/kitty-prewarm-autostart.desktop" "$HOME/.config/autostart/kitty-prewarm.desktop"
 pgrep -x kitty >/dev/null || (kitty --single-instance --start-as=hidden &>/dev/null & disown)
+
+# 7. plasmalust-resize KWin script (see note above)
+kpackagetool6 --type KWin/Script --upgrade "$SCRIPT_DIR/../kwin-scripts/plasmalust-resize" 2>/dev/null \
+    || kpackagetool6 --type KWin/Script --install "$SCRIPT_DIR/../kwin-scripts/plasmalust-resize"
+kwriteconfig6 --file kwinrc --group Plugins --key plasmalust-resizeEnabled --type bool true
+kwriteconfig6 --file kglobalshortcutsrc --group kwin --key "Window to Next Screen" "none,Meta+Shift+Right,Move Window to Next Screen"
+kwriteconfig6 --file kglobalshortcutsrc --group kwin --key "Window to Previous Screen" "none,Meta+Shift+Left,Move Window to Previous Screen"
+qdbus6 org.kde.KWin /KWin reconfigure
 
 echo "System polish applied. Run set-theme once to render Kvantum's wallust colors,"
 echo "then restart plasmashell/relaunch Dolphin and Spotify to pick everything up."
