@@ -58,8 +58,8 @@ tree_branch_line=true
 
 [GeneralColors]
 window.color={{ background }}
-base.color={{ background | lighten(0.05) }}
-alt.base.color={{ background | lighten(0.03) }}
+base.color={{ background | lighten(0.42) }}
+alt.base.color={{ background | lighten(0.38) }}
 button.color={{ color8 }}
 light.color={{ color8 | lighten(0.15) }}
 mid.light.color={{ background | darken(0.1) }}
@@ -83,7 +83,7 @@ transparent_dolphin_view=false
 transparent_pcmanfm_sidepane=true
 blur_translucent=false
 transparent_menutitle=true
-respect_darkness=true
+respect_darkness=false
 force_size_grip=true
 iconless_pushbutton=true
 iconless_menu=false
