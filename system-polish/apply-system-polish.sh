@@ -35,6 +35,13 @@
 #   system default file manager. Also adds a Meta+E global shortcut - note
 #   this requires kglobalaccel (hosted inside kded6) to re-scan shortcuts,
 #   which only happens on next login/kded6 restart; it's saved either way.
+# - kitty pre-warm: autostarts a hidden `kitty --single-instance --start-as=
+#   hidden` at login. Single-instance mode already makes every window after
+#   the first fast, but with nothing running yet, the *first* window of a
+#   session still pays kitty's cold GPU-context startup cost (~270ms
+#   measured). A hidden warm instance from login means there's never a
+#   genuine "first" window from the user's perspective - measured ~29ms
+#   even opening on a completely empty desktop.
 set -euo pipefail
 
 KVANTUM_SRC_THEME="/usr/share/Kvantum/KvArcDark/KvArcDark.svg"
@@ -92,6 +99,11 @@ cp "$SCRIPT_DIR/../dotfiles/yazi.desktop" "$HOME/.local/share/applications/yazi.
 update-desktop-database "$HOME/.local/share/applications" 2>/dev/null || true
 xdg-mime default yazi.desktop inode/directory
 kwriteconfig6 --file kglobalshortcutsrc --group "services" --group "yazi.desktop" --key "_launch" "Meta+E,Meta+E,Yazi"
+
+# 6. kitty pre-warm autostart (see note above)
+mkdir -p "$HOME/.config/autostart"
+cp "$SCRIPT_DIR/../dotfiles/kitty-prewarm-autostart.desktop" "$HOME/.config/autostart/kitty-prewarm.desktop"
+pgrep -x kitty >/dev/null || (kitty --single-instance --start-as=hidden &>/dev/null & disown)
 
 echo "System polish applied. Run set-theme once to render Kvantum's wallust colors,"
 echo "then restart plasmashell/relaunch Dolphin and Spotify to pick everything up."

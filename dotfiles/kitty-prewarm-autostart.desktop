@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=kitty pre-warm
+Comment=Keeps a hidden kitty instance running so the first visible terminal window of the session opens instantly instead of paying the cold GPU-context startup cost
+Exec=kitty --single-instance --start-as=hidden
+Icon=kitty
+NoDisplay=true
+X-KDE-autostart-phase=1
