@@ -4,22 +4,24 @@ import org.kde.plasma.plasma5support as P5Support
 
 // App-launcher shortcuts (menu overlay, wallpaper overlay, yazi) as a KWin
 // script instead of the standard kglobalshortcutsrc "_launch" desktop-file
-// mechanism. The desktop-file approach was tried first and looked correct
-// end to end - kglobalaccel showed each shortcut registered, active, with
-// the right keycode, and invoking it over D-Bus launched the app fine -
-// but the physical keypress never reached kglobalaccel after a real
-// logout/login, meaning kwin_wayland's own compositor-level key grab
-// wasn't in sync with kglobalaccel's registry. Declarative KWin-script
-// ShortcutHandlers don't go through that path at all (confirmed reliable
-// already for the Meta+Shift+Arrow resize shortcuts), so this runs the
-// same commands through one instead.
+// mechanism, which was tried first: kglobalaccel showed each shortcut
+// registered, active, with the right keycode, and invoking it over D-Bus
+// launched the app fine, but the physical keypress itself never got that
+// far after a real logout/login.
 Item {
     P5Support.DataSource {
         id: runner
         engine: "executable"
         connectedSources: []
         function exec(cmd) { connectSource(cmd); }
-        onNewData: disconnectSource(source)
+        // The bare "onNewData: disconnectSource(source)" shorthand used in
+        // the standalone qml6 popups doesn't work here - KWin's
+        // declarativescript engine doesn't implicitly expose the signal's
+        // sourceName parameter the way a full qml6 app does, and silently
+        // throws "source is not defined" instead (visible in
+        // journalctl for kwin_wayland), which was the actual reason these
+        // shortcuts didn't do anything when pressed.
+        onNewData: function (sourceName) { disconnectSource(sourceName); }
     }
 
     ShortcutHandler {
