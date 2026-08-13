@@ -1,0 +1,13 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Plasmalust Wallpapers
+GenericName=Wallpaper picker overlay
+Comment=Fullscreen wallpaper browser - click to apply, hover to delete
+TryExec=qml6
+StartupNotify=true
+Exec=plasmalust-wallpaper-overlay
+Icon=preferences-desktop-wallpaper
+Terminal=false
+NoDisplay=true
+Categories=System;Utility;

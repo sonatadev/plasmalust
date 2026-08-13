@@ -31,6 +31,13 @@ fi
 mkdir -p "$HOME/.config/Kvantum/Plasmalust"
 wallust run --no-cache "$WALLPAPER" || exit 1
 
+# The wallpaper-overlay template keeps the repo's portable /home/YOUR_USERNAME
+# placeholder for paths (only colors are wallust-templated) since, unlike the
+# plasma-widgets, it isn't installed through install-widgets.sh's own sed
+# step - it's just run directly from this cache location.
+OVERLAY_QML="$HOME/.cache/wallust/wallpaper-overlay.qml"
+[ -f "$OVERLAY_QML" ] && sed -i "s|/home/YOUR_USERNAME|$HOME|g" "$OVERLAY_QML"
+
 # 2. Apply the freshly generated color scheme system-wide (Plasma + all Qt/KDE apps,
 # including Dolphin, inherit this automatically — no per-app step needed).
 # Stop Plasma's own "accent color from wallpaper" first so it doesn't fight wallust

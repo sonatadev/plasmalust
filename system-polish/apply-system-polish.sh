@@ -49,6 +49,12 @@
 #   above, live reassignment of an already-loaded KWin shortcut doesn't
 #   take effect until next login even via direct kglobalaccel DBus calls,
 #   confirmed by testing; it's saved correctly either way.
+# - Wallpaper overlay: a fullscreen wallpaper browser (click to apply,
+#   hover to delete), bound to Meta+O. It's just wallust-templated QML run
+#   directly via `qml6` - no build/install step, regenerates every
+#   set-theme run (see templates/wallpaper-overlay.qml and the sed step in
+#   set-theme that fills in the real $HOME, since unlike the plasma-widgets
+#   this isn't installed through install-widgets.sh's own sed).
 set -euo pipefail
 
 KVANTUM_SRC_THEME="/usr/share/Kvantum/KvArcDark/KvArcDark.svg"
@@ -119,6 +125,12 @@ kwriteconfig6 --file kwinrc --group Plugins --key plasmalust-resizeEnabled --typ
 kwriteconfig6 --file kglobalshortcutsrc --group kwin --key "Window to Next Screen" "none,Meta+Shift+Right,Move Window to Next Screen"
 kwriteconfig6 --file kglobalshortcutsrc --group kwin --key "Window to Previous Screen" "none,Meta+Shift+Left,Move Window to Previous Screen"
 qdbus6 org.kde.KWin /KWin reconfigure
+
+# 8. Wallpaper overlay (see note above)
+install -m755 "$SCRIPT_DIR/../scripts/plasmalust-wallpaper-overlay" "$HOME/.local/bin/plasmalust-wallpaper-overlay"
+cp "$SCRIPT_DIR/../dotfiles/plasmalust-wallpaper-overlay.desktop" "$HOME/.local/share/applications/plasmalust-wallpaper-overlay.desktop"
+update-desktop-database "$HOME/.local/share/applications" 2>/dev/null || true
+kwriteconfig6 --file kglobalshortcutsrc --group "services" --group "plasmalust-wallpaper-overlay.desktop" --key "_launch" "Meta+O,Meta+O,Plasmalust Wallpapers"
 
 echo "System polish applied. Run set-theme once to render Kvantum's wallust colors,"
 echo "then restart plasmashell/relaunch Dolphin and Spotify to pick everything up."

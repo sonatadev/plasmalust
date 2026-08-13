@@ -1,0 +1,5 @@
+#!/bin/bash
+# Launches the wallpaper picker overlay (fullscreen, click-to-apply,
+# hover-to-delete). Just runs the wallust-templated QML directly - no
+# install/build step, it regenerates on every set-theme run.
+exec qml6 "$HOME/.cache/wallust/wallpaper-overlay.qml"
