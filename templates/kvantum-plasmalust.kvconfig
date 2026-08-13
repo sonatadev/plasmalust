@@ -58,8 +58,8 @@ tree_branch_line=true
 
 [GeneralColors]
 window.color={{ background }}
-base.color={{ background | lighten(0.42) }}
-alt.base.color={{ background | lighten(0.38) }}
+base.color={{ background | blend(color5) | lighten(0.25) }}
+alt.base.color={{ background | blend(color5) | lighten(0.20) }}
 button.color={{ color8 }}
 light.color={{ color8 | lighten(0.15) }}
 mid.light.color={{ background | darken(0.1) }}
