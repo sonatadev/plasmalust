@@ -90,3 +90,7 @@ target = "/home/YOUR_USERNAME/.cache/wallust/plasmalust.theme.json"
 [templates.kvantum]
 template = "kvantum-plasmalust.kvconfig"
 target = "/home/YOUR_USERNAME/.config/Kvantum/Plasmalust/Plasmalust.kvconfig"
+
+[templates.ksplash]
+template = "ksplash-plasmalust.qml"
+target = "/home/YOUR_USERNAME/.cache/wallust/ksplash-Splash.qml"
