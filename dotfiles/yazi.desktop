@@ -1,0 +1,13 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Yazi
+GenericName=File manager
+Comment=Blazing fast terminal file manager
+TryExec=yazi
+StartupNotify=true
+Exec=kitty --single-instance --title yazi -e yazi %f
+Icon=yazi
+Terminal=false
+Categories=System;FileManager;ConsoleOnly;
+MimeType=inode/directory;

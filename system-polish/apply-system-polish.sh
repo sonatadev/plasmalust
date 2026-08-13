@@ -30,6 +30,11 @@
 #   launcher, and the taskbar icon. First open with no kitty running yet is
 #   still a cold start - single-instance doesn't keep a window-less process
 #   alive in the background.
+# - yazi: installs a yazi.desktop (kitty --single-instance -e yazi) and sets
+#   it as the default handler for inode/directory via xdg-mime, so it's the
+#   system default file manager. Also adds a Meta+E global shortcut - note
+#   this requires kglobalaccel (hosted inside kded6) to re-scan shortcuts,
+#   which only happens on next login/kded6 restart; it's saved either way.
 set -euo pipefail
 
 KVANTUM_SRC_THEME="/usr/share/Kvantum/KvArcDark/KvArcDark.svg"
@@ -81,6 +86,12 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 mkdir -p "$HOME/.local/share/applications"
 cp "$SCRIPT_DIR/../dotfiles/kitty.desktop" "$HOME/.local/share/applications/kitty.desktop"
 update-desktop-database "$HOME/.local/share/applications" 2>/dev/null || true
+
+# 5. yazi: default file manager (see note above)
+cp "$SCRIPT_DIR/../dotfiles/yazi.desktop" "$HOME/.local/share/applications/yazi.desktop"
+update-desktop-database "$HOME/.local/share/applications" 2>/dev/null || true
+xdg-mime default yazi.desktop inode/directory
+kwriteconfig6 --file kglobalshortcutsrc --group "services" --group "yazi.desktop" --key "_launch" "Meta+E,Meta+E,Yazi"
 
 echo "System polish applied. Run set-theme once to render Kvantum's wallust colors,"
 echo "then restart plasmashell/relaunch Dolphin and Spotify to pick everything up."
