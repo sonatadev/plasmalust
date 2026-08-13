@@ -86,3 +86,7 @@ target = "/home/YOUR_USERNAME/.config/Google/AndroidStudioXXXX.X/colors/Wallust.
 [templates.android-studio-ui-theme]
 template = "android-studio.theme.json"
 target = "/home/YOUR_USERNAME/.cache/wallust/plasmalust.theme.json"
+
+[templates.kvantum]
+template = "kvantum-plasmalust.kvconfig"
+target = "/home/YOUR_USERNAME/.config/Kvantum/Plasmalust/Plasmalust.kvconfig"

@@ -28,6 +28,7 @@ fi
 # This regenerates: the KDE color scheme (~/.local/share/color-schemes/Wallust.colors),
 # the kitty theme (~/.config/kitty/current-theme.conf), fastfetch config, and live
 # terminal OSC sequences (~/.cache/wallust/sequences) — per wallust.toml templates.
+mkdir -p "$HOME/.config/Kvantum/Plasmalust"
 wallust run --no-cache "$WALLPAPER" || exit 1
 
 # 2. Apply the freshly generated color scheme system-wide (Plasma + all Qt/KDE apps,
