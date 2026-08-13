@@ -57,7 +57,7 @@ tooltip_delay=-1
 tree_branch_line=true
 
 [GeneralColors]
-window.color={{ background }}
+window.color={{ background | blend(color5) | lighten(0.25) }}
 base.color={{ background | blend(color5) | lighten(0.25) }}
 alt.base.color={{ background | blend(color5) | lighten(0.20) }}
 button.color={{ color8 }}

@@ -13,10 +13,12 @@
 #   templates/kvantum-plasmalust.kvconfig) and makes it the active Qt6
 #   style, so Dolphin (and other Qt/KDE apps) pick up rounded, themed
 #   widgets instead of flat stock Breeze.
-#   Note: base.color (item view background) is templated much lighter
-#   than the rest of the theme on purpose - Dolphin's icon-view file
-#   labels render with a fixed, non-themeable dark caption color, so a
-#   fully dark base.color makes filenames unreadable. See kvantum-plasmalust.kvconfig.
+#   Note: window.color and base.color (sidebar/toolbar and item view
+#   backgrounds) are templated much lighter than the rest of the theme
+#   on purpose - Dolphin's file labels AND its Places sidebar entries
+#   both render with a fixed, non-themeable dark caption color (confirmed
+#   by testing - no GeneralColors key changes it), so a fully dark
+#   background makes that text unreadable. See kvantum-plasmalust.kvconfig.
 # - KWin window rule: makes Spotify's window translucent (blurred behind,
 #   via the already-enabled blur effect) so it matches the rest of the
 #   translucent/blurred system chrome.
