@@ -1,0 +1,6 @@
+#!/bin/bash
+# Launches the standalone quick-launcher menu popup (apps, terminal toys,
+# power actions - same items as the plasmalust-menu desktop widget). Just
+# runs the wallust-templated QML directly - no install/build step, it
+# regenerates on every set-theme run.
+exec qml6 "$HOME/.cache/wallust/menu-overlay.qml"

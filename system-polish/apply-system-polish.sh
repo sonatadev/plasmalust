@@ -55,6 +55,13 @@
 #   set-theme run (see templates/wallpaper-overlay.qml and the sed step in
 #   set-theme that fills in the real $HOME, since unlike the plasma-widgets
 #   this isn't installed through install-widgets.sh's own sed).
+# - Menu overlay: standalone popup twin of the plasmalust-menu desktop
+#   widget (same app/toybox/power items), bound to Meta+X. The widget
+#   itself opens its menu via a plain QQC2.Menu.popup() call with no
+#   Plasmoid.expanded hook, so there's no way to trigger that specific
+#   running widget instance from an external global shortcut - same
+#   wallust-templated-QML-via-qml6 approach as the wallpaper overlay
+#   instead, sharing the sed step above for the same reason.
 set -euo pipefail
 
 KVANTUM_SRC_THEME="/usr/share/Kvantum/KvArcDark/KvArcDark.svg"
@@ -131,6 +138,12 @@ install -m755 "$SCRIPT_DIR/../scripts/plasmalust-wallpaper-overlay" "$HOME/.loca
 cp "$SCRIPT_DIR/../dotfiles/plasmalust-wallpaper-overlay.desktop" "$HOME/.local/share/applications/plasmalust-wallpaper-overlay.desktop"
 update-desktop-database "$HOME/.local/share/applications" 2>/dev/null || true
 kwriteconfig6 --file kglobalshortcutsrc --group "services" --group "plasmalust-wallpaper-overlay.desktop" --key "_launch" "Meta+O,Meta+O,Plasmalust Wallpapers"
+
+# 9. Menu overlay (see note above)
+install -m755 "$SCRIPT_DIR/../scripts/plasmalust-menu-overlay" "$HOME/.local/bin/plasmalust-menu-overlay"
+cp "$SCRIPT_DIR/../dotfiles/plasmalust-menu-overlay.desktop" "$HOME/.local/share/applications/plasmalust-menu-overlay.desktop"
+update-desktop-database "$HOME/.local/share/applications" 2>/dev/null || true
+kwriteconfig6 --file kglobalshortcutsrc --group "services" --group "plasmalust-menu-overlay.desktop" --key "_launch" "Meta+X,Meta+X,Plasmalust Menu"
 
 echo "System polish applied. Run set-theme once to render Kvantum's wallust colors,"
 echo "then restart plasmashell/relaunch Dolphin and Spotify to pick everything up."

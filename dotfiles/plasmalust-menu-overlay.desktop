@@ -1,0 +1,13 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Plasmalust Menu
+GenericName=Quick-launcher popup
+Comment=Apps, terminal toys, and power actions in one popup
+TryExec=qml6
+StartupNotify=true
+Exec=plasmalust-menu-overlay
+Icon=application-menu
+Terminal=false
+NoDisplay=true
+Categories=System;Utility;
