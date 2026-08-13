@@ -33,7 +33,7 @@ PlasmoidItem {
     }
 
     function refresh() {
-        runner.exec("playerctl metadata --format '{{title}}::{{artist}}::{{album}}::{{status}}::{{position}}::{{mpris:length}}::{{mpris:artUrl}}'", function (stdout) {
+        runner.exec("playerctl -p spotify metadata --format '{{title}}::{{artist}}::{{album}}::{{status}}::{{position}}::{{mpris:length}}::{{mpris:artUrl}}'", function (stdout) {
             const line = (stdout || "").trim();
             if (!line) {
                 root.hasPlayer = false;
@@ -60,7 +60,7 @@ PlasmoidItem {
     }
 
     function control(action) {
-        runner.exec("playerctl " + action, function () { root.refresh(); });
+        runner.exec("playerctl -p spotify " + action, function () { root.refresh(); });
     }
 
     Component.onCompleted: refresh()
