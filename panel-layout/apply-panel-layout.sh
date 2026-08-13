@@ -21,6 +21,15 @@
 #   properties, not config file keys - not persisted anywhere obvious via
 #   grep, but confirmed to survive plasmashell restarts, so set once here
 #   via scripting rather than needing to run on every set-theme call.
+# - Plasma Desktop Theme: switched from Mokka (Garuda's static custom
+#   theme - fixed hover/highlight colors baked into its SVG assets, never
+#   follows wallust) to Breeze Dark, which is accent-color-aware in
+#   Plasma 6. This is what actually drives the task manager's hover/
+#   active pill, Kickoff menu highlights, OSDs, tooltips, etc. - none of
+#   that is Kvantum's job (Kvantum only styles Qt Widgets apps, not
+#   native Plasma shell/QML elements), so no amount of panel-colorizer or
+#   Kvantum tuning alone would have made the bottom bar's taskbar icons
+#   pick up the current wallpaper's accent. This is the fix for that.
 set -euo pipefail
 
 kwriteconfig6 --file plasma-org.kde.plasma.desktop-appletsrc \
@@ -34,6 +43,8 @@ kwriteconfig6 --file plasma-org.kde.plasma.desktop-appletsrc \
 kwriteconfig6 --file plasma-org.kde.plasma.desktop-appletsrc \
     --group Containments --group 33 --group Applets --group 41 --group General \
     --key hiddenItems "plasmashell_microphone,Garuda System Maintenance"
+
+kwriteconfig6 --file plasmarc --group Theme --key name breeze-dark
 
 kquitapp6 plasmashell 2>/dev/null || true
 for i in $(seq 1 20); do pgrep -x plasmashell >/dev/null 2>&1 || break; sleep 0.5; done
