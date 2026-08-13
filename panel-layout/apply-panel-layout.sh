@@ -15,10 +15,12 @@
 #   recolored to match; hiding (not disabling) keeps them reachable from
 #   the "show hidden icons" flyout.
 # - Top panel: enable Plasma's native floating-panel mode (rounded
-#   corners, edge gap, drop shadow). This is a live Containment property,
-#   not a config file key - not persisted anywhere obvious, but confirmed
-#   to survive plasmashell restarts, so it's set once here via scripting
-#   rather than needing to run on every set-theme call.
+#   corners, edge gap, drop shadow), and bump its height from the default
+#   32px to 40px - too thin for the systray to comfortably scale/center
+#   its icons in, even with scaleIconsToFit on. Both are live Containment
+#   properties, not config file keys - not persisted anywhere obvious via
+#   grep, but confirmed to survive plasmashell restarts, so set once here
+#   via scripting rather than needing to run on every set-theme call.
 set -euo pipefail
 
 kwriteconfig6 --file plasma-org.kde.plasma.desktop-appletsrc \
@@ -42,7 +44,10 @@ sleep 4
 qdbus6 org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript '
     var ps = panels();
     for (var i = 0; i < ps.length; i++) {
-        if (ps[i].location == "top") ps[i].floating = true;
+        if (ps[i].location == "top") {
+            ps[i].floating = true;
+            ps[i].height = 40;
+        }
     }
 '
 
