@@ -16,6 +16,9 @@ declare -A TOYS=(
     [monitor]="btop"
     [audio]="cava"
     [banner]="__banner"
+    [bonsai]="cbonsai -S"
+    [stars]="astroterm -c -C -g -u -q -a 38.11 -o 15.66"
+    [palette]="__palette"
 )
 
 __banner() {
@@ -24,12 +27,18 @@ __banner() {
     read -rn1 -p "-- press any key --"
 }
 
+__palette() {
+    mapfile -t colors < <(grep -oE '^color[0-9]+ +#[0-9A-Fa-f]{6}' ~/.config/kitty/current-theme.conf | awk '{print $2}' | sort -u)
+    pastel color "${colors[@]}"
+    read -rn1 -p "-- press any key --"
+}
+
 choice=$(printf '%s\n' "${!TOYS[@]}" | sort | fzf --prompt="toybox> " --height=~40% --border --reverse)
 [ -n "$choice" ] || exit 0
 
 cmd="${TOYS[$choice]}"
-if [ "$cmd" = "__banner" ]; then
-    __banner
+if [[ "$cmd" == __* ]]; then
+    "$cmd"
 else
-    exec "$cmd"
+    exec $cmd
 fi
