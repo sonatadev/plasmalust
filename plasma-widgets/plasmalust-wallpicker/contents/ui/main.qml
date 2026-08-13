@@ -17,11 +17,6 @@ PlasmoidItem {
     property bool expanded: false
     property real revealHeight: expanded ? height : lineHeight
 
-    Behavior on revealHeight {
-        NumberAnimation { duration: 160; easing.type: Easing.OutQuad }
-    }
-    onRevealHeightChanged: frame.requestPaint()
-
     HoverHandler {
         id: hoverWatch
         onHoveredChanged: root.expanded = hovered
@@ -64,43 +59,79 @@ PlasmoidItem {
 
     Component.onCompleted: load()
 
-    Canvas {
-        id: frame
-        anchors.fill: parent
-        onPaint: {
-            const ctx = getContext("2d");
-            ctx.reset();
-            const accent = Kirigami.Theme.highlightColor;
-            const bg = Kirigami.Theme.backgroundColor;
-            const m = 6, fl = 18;
+    // Reveal animation is done via GPU clipping (cheap) instead of
+    // repainting the Canvas every animation frame (was causing lag on hover).
+    Item {
+        id: revealMask
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.top: parent.top
+        height: root.revealHeight
+        clip: true
 
-            ctx.shadowColor = Qt.rgba(accent.r, accent.g, accent.b, 0.55);
-            ctx.shadowBlur = 10;
-            const h = root.revealHeight;
+        Behavior on height {
+            NumberAnimation { duration: 160; easing.type: Easing.OutQuad }
+        }
 
-            ctx.fillStyle = Qt.rgba(bg.r, bg.g, bg.b, 0.78);
-            ctx.strokeStyle = Qt.rgba(accent.r, accent.g, accent.b, 0.6);
-            ctx.lineWidth = 1.2;
-            ctx.fillRect(m, m, width - 2 * m, h - 2 * m);
-            ctx.strokeRect(m, m, width - 2 * m, h - 2 * m);
+        Canvas {
+            id: frame
+            width: revealMask.width
+            height: root.height
+            onPaint: {
+                const ctx = getContext("2d");
+                ctx.reset();
+                const accent = Kirigami.Theme.highlightColor;
+                const bg = Kirigami.Theme.backgroundColor;
+                const m = 6, fl = 18;
 
-            ctx.strokeStyle = accent;
-            ctx.lineWidth = 2;
-            function corner(x, y, dx, dy) {
-                ctx.beginPath();
-                ctx.moveTo(x, y + dy * fl);
-                ctx.lineTo(x, y);
-                ctx.lineTo(x + dx * fl, y);
-                ctx.stroke();
-                ctx.beginPath();
-                ctx.arc(x + dx * 5, y + dy * 5, 2, 0, Math.PI * 2);
-                ctx.fillStyle = accent;
-                ctx.fill();
+                ctx.shadowColor = Qt.rgba(accent.r, accent.g, accent.b, 0.55);
+                ctx.shadowBlur = 10;
+                const h = height;
+
+                ctx.fillStyle = Qt.rgba(bg.r, bg.g, bg.b, 0.78);
+                ctx.strokeStyle = Qt.rgba(accent.r, accent.g, accent.b, 0.6);
+                ctx.lineWidth = 1.2;
+                ctx.fillRect(m, m, width - 2 * m, h - 2 * m);
+                ctx.strokeRect(m, m, width - 2 * m, h - 2 * m);
+
+                ctx.strokeStyle = accent;
+                ctx.lineWidth = 2;
+                function corner(x, y, dx, dy) {
+                    ctx.beginPath();
+                    ctx.moveTo(x, y + dy * fl);
+                    ctx.lineTo(x, y);
+                    ctx.lineTo(x + dx * fl, y);
+                    ctx.stroke();
+
+                    ctx.beginPath();
+                    ctx.arc(x, y + dy * fl, 2.5, 0, Math.PI * 2);
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.arc(x + dx * fl, y, 2.5, 0, Math.PI * 2);
+                    ctx.stroke();
+
+                    const s = 8, cx = x + dx * s, cy = y + dy * s;
+                    ctx.beginPath();
+                    ctx.moveTo(cx, cy - 3.5);
+                    ctx.lineTo(cx + 3.5, cy);
+                    ctx.lineTo(cx, cy + 3.5);
+                    ctx.lineTo(cx - 3.5, cy);
+                    ctx.closePath();
+                    ctx.fillStyle = accent;
+                    ctx.fill();
+
+                    ctx.beginPath();
+                    ctx.arc(x + dx * 3, y + dy * 3, 1.8, 0, Math.PI * 2);
+                    ctx.fillStyle = accent;
+                    ctx.fill();
+                }
+                corner(m, m, 1, 1);
+                corner(width - m, m, -1, 1);
+                corner(m, h - m, 1, -1);
+                corner(width - m, h - m, -1, -1);
             }
-            corner(m, m, 1, 1);
-            corner(width - m, m, -1, 1);
-            corner(m, h - m, 1, -1);
-            corner(width - m, h - m, -1, -1);
+            onWidthChanged: requestPaint()
+            onHeightChanged: requestPaint()
         }
     }
 
