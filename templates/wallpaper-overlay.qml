@@ -197,6 +197,7 @@ Window {
                     color: root.fg
                     focus: true
                     Keys.onEscapePressed: root.close()
+                    Keys.onDownPressed: grid.focus = true
                 }
             }
 
@@ -208,6 +209,16 @@ Window {
                 cellWidth: 168
                 cellHeight: 132
                 model: root.filtered
+                currentIndex: 0
+                keyNavigationWraps: false
+
+                ScrollBar.vertical: ScrollBar {
+                    policy: ScrollBar.AsNeeded
+                }
+
+                Keys.onEscapePressed: root.close()
+                Keys.onReturnPressed: if (root.filtered[grid.currentIndex]) root.apply(root.filtered[grid.currentIndex])
+                Keys.onEnterPressed: if (root.filtered[grid.currentIndex]) root.apply(root.filtered[grid.currentIndex])
 
                 delegate: Item {
                     id: cell
@@ -220,8 +231,8 @@ Window {
                         anchors.margins: 6
                         radius: 8
                         color: "transparent"
-                        border.width: hoverArea.containsMouse ? 2 : 1
-                        border.color: hoverArea.containsMouse
+                        border.width: (hoverArea.containsMouse || (cell.GridView.isCurrentItem && grid.activeFocus)) ? 2 : 1
+                        border.color: (hoverArea.containsMouse || (cell.GridView.isCurrentItem && grid.activeFocus))
                             ? root.accent
                             : Qt.rgba(root.accent.r, root.accent.g, root.accent.b, 0.3)
 
@@ -239,7 +250,7 @@ Window {
                             anchors.left: parent.left
                             anchors.right: parent.right
                             anchors.margins: 4
-                            visible: hoverArea.containsMouse
+                            visible: hoverArea.containsMouse || (cell.GridView.isCurrentItem && grid.activeFocus)
                             text: cell.modelData.name
                             font.family: "monospace"
                             font.pixelSize: 10
