@@ -209,7 +209,7 @@ preflight() {
         die "run this from a terminal inside your Plasma desktop session (the theme/layout steps need it), or use --skip theme,layout,widgets,polish,kde."
     fi
 
-    if [ "$DRY_RUN" = 0 ] && { want packages || want remove || want system; }; then
+    if [ "$DRY_RUN" = 0 ] && { want packages || want remove || want shell || want system; }; then
         info "sudo is needed for packages and GRUB/login screen:"
         sudo -v || die "sudo failed."
         # keep the sudo timestamp fresh for the rest of the run
@@ -297,7 +297,7 @@ step_shell() {
     fi
     info "current login shell: $current (plasmalust's shell config is for bash)"
     if confirm "Switch your login shell to bash?"; then
-        run chsh -s /bin/bash && ok "login shell set to bash (takes effect at next login)"
+        run sudo chsh -s /bin/bash "$USER" && ok "login shell set to bash (takes effect at next login)"
     else
         warn "kept $current - fastfetch/fzf/eza/yazi shell integration won't load there"
     fi
