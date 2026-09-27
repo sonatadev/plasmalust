@@ -211,7 +211,7 @@ preflight() {
 
     if [ "$DRY_RUN" = 0 ] && { want packages || want remove || want shell || want system; }; then
         info "sudo is needed for packages and GRUB/login screen:"
-        sudo -v || die "sudo failed."
+        sudo -n true 2>/dev/null || sudo -v || die "sudo failed."
         # keep the sudo timestamp fresh for the rest of the run
         while kill -0 $$ 2>/dev/null; do sudo -n true 2>/dev/null; sleep 50; done &
         SUDO_KEEPALIVE=$!
