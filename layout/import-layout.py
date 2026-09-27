@@ -91,6 +91,21 @@ def rescale_geometry(value, src, dst):
     return ";".join(items) + ";"
 
 
+def installed_launchers(value):
+    """Task manager pinned launchers, minus apps this machine doesn't have
+    (they'd show up as a "?" icon in the dock)."""
+    dirs = [os.path.join(HOME, ".local/share")] + \
+        os.environ.get("XDG_DATA_DIRS", "/usr/local/share:/usr/share").split(":")
+    keep = []
+    for entry in filter(None, value.split(",")):
+        if entry.startswith("applications:"):
+            name = entry.split(":", 1)[1]
+            if not any(os.path.exists(os.path.join(d, "applications", name)) for d in dirs):
+                continue
+        keep.append(entry)
+    return ",".join(keep)
+
+
 def main():
     if len(sys.argv) != 2 or not os.path.isfile(sys.argv[1]):
         sys.exit("Usage: import-layout.py WALLPAPER_IMAGE")
@@ -110,6 +125,9 @@ def main():
             return "%s=%s" % (match.group(1), rescale_geometry(match.group(2), src_res, dst_res))
         text = re.sub(r"^(ItemGeometries(?:-__RES__|Horizontal))=(.*)$", fix, text, flags=re.M)
         text = text.replace("ItemGeometries-__RES__", "ItemGeometries-%dx%d" % dst_res)
+
+    text = re.sub(r"^launchers=(.*)$", lambda lm: "launchers=" + installed_launchers(lm.group(1)),
+                  text, flags=re.M)
 
     shellrc = open(os.path.join(SRC_DIR, "plasmashellrc"), encoding="utf-8").read().replace("__HOME__", HOME)
 

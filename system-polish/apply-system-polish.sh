@@ -153,7 +153,7 @@ cp "$SCRIPT_DIR/../dotfiles/kitty-prewarm-autostart.desktop" "$HOME/.config/auto
 pgrep -x kitty >/dev/null || (kitty --single-instance --start-as=hidden &>/dev/null & disown)
 
 # 7. plasmalust-resize KWin script (see note above)
-kpackagetool6 --type KWin/Script --upgrade "$SCRIPT_DIR/../kwin-scripts/plasmalust-resize" 2>/dev/null \
+kpackagetool6 --type KWin/Script --upgrade "$SCRIPT_DIR/../kwin-scripts/plasmalust-resize" >/dev/null 2>&1 \
     || kpackagetool6 --type KWin/Script --install "$SCRIPT_DIR/../kwin-scripts/plasmalust-resize"
 kwriteconfig6 --file kwinrc --group Plugins --key plasmalust-resizeEnabled --type bool true
 kwriteconfig6 --file kglobalshortcutsrc --group kwin --key "Window to Next Screen" "none,Meta+Shift+Right,Move Window to Next Screen"
@@ -171,7 +171,7 @@ cp "$SCRIPT_DIR/../dotfiles/plasmalust-menu-overlay.desktop" "$HOME/.local/share
 update-desktop-database "$HOME/.local/share/applications" 2>/dev/null || true
 
 # 10. plasmalust-shortcuts KWin script: Meta+X/O/E (see note above)
-kpackagetool6 --type KWin/Script --upgrade "$SCRIPT_DIR/../kwin-scripts/plasmalust-shortcuts" 2>/dev/null \
+kpackagetool6 --type KWin/Script --upgrade "$SCRIPT_DIR/../kwin-scripts/plasmalust-shortcuts" >/dev/null 2>&1 \
     || kpackagetool6 --type KWin/Script --install "$SCRIPT_DIR/../kwin-scripts/plasmalust-shortcuts"
 kwriteconfig6 --file kwinrc --group Plugins --key plasmalust-shortcutsEnabled --type bool true
 qdbus6 org.kde.KWin /KWin reconfigure
