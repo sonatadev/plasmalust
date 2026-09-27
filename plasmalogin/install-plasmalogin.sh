@@ -47,12 +47,14 @@ else
     cp "$WALLPAPER" "$DEST_WALLPAPER"
 fi
 
-mkdir -p /etc
-cat > /etc/plasmalogin.conf << EOF
-[Greeter][Wallpaper][org.kde.image][General]
-Image=file://$DEST_WALLPAPER
-Blur=false
-EOF
+# Only these two keys - /etc/plasmalogin.conf also holds settings this
+# script doesn't own (the installer writes [Autologin] there), which
+# rewriting the whole file used to silently wipe.
+for kv in "Image=file://$DEST_WALLPAPER" "Blur=false"; do
+    kwriteconfig6 --file /etc/plasmalogin.conf \
+        --group Greeter --group Wallpaper --group org.kde.image --group General \
+        --key "${kv%%=*}" "${kv#*=}"
+done
 
 # Color scheme - copy the most recently generated Wallust-*.colors from the
 # real user's color-schemes dir into plasmalogin's own, and point its own
