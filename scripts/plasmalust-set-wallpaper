@@ -2,13 +2,17 @@
 # Sets the desktop wallpaper to the given path and re-runs the full
 # plasmalust theming pipeline. Used by the plasmalust-wallpicker widget,
 # but works standalone too.
+#
+# plasma-apply-wallpaperimage goes through plasmashell itself, so it hits
+# whichever desktop containment is live - no hardcoded containment id that
+# only matches one machine's plasma-org.kde.plasma.desktop-appletsrc.
 set -euo pipefail
 
 WALLPAPER="$1"
 [ -f "$WALLPAPER" ] || { echo "Error: $WALLPAPER not found" >&2; exit 1; }
 
-kwriteconfig6 --file plasma-org.kde.plasma.desktop-appletsrc \
-    --group Containments --group 63 --group Wallpaper --group org.kde.image --group General \
-    --key Image "file://$WALLPAPER"
+plasma-apply-wallpaperimage "$WALLPAPER" >/dev/null
 
-exec "$HOME/.local/bin/set-theme"
+# Passed explicitly: plasmashell writes its config file lazily, so reading
+# it straight back here could still see the previous wallpaper.
+exec "$HOME/.local/bin/set-theme" "$WALLPAPER"

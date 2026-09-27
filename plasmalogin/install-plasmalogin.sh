@@ -25,10 +25,9 @@ if [ -z "$PL_HOME" ]; then
     exit 1
 fi
 
-# Wallpaper - same detection set-theme itself uses, reading the real user's
-# config, not root's.
-WALLPAPER=$(sudo -u "$REAL_USER" grep '^Image=' "$REAL_HOME/.config/plasma-org.kde.plasma.desktop-appletsrc" | tail -n 1 | cut -d'=' -f2-)
-WALLPAPER="${WALLPAPER#file://}"
+# Wallpaper - the path set-theme already resolved (handles KDE
+# wallpaper-package directories, not just plain files).
+WALLPAPER=$(cat "$REAL_HOME/.cache/wallust/wallpaper-path" 2>/dev/null || true)
 if [ -z "$WALLPAPER" ] || [ ! -f "$WALLPAPER" ]; then
     echo "Error: could not detect current wallpaper." >&2
     exit 1

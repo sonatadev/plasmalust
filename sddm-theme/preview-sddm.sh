@@ -14,8 +14,7 @@ if [ ! -f "$STAGED_CONF" ]; then
 fi
 cp "$STAGED_CONF" "$SCRIPT_DIR/theme.conf"
 
-WALLPAPER=$(grep '^Image=' "$HOME/.config/plasma-org.kde.plasma.desktop-appletsrc" | tail -n 1 | cut -d'=' -f2-)
-WALLPAPER="${WALLPAPER#file://}"
+WALLPAPER=$(cat "$HOME/.cache/wallust/wallpaper-path" 2>/dev/null || true)
 if [ -n "$WALLPAPER" ] && [ -f "$WALLPAPER" ]; then
     cp "$WALLPAPER" "$SCRIPT_DIR/background.png"
 else

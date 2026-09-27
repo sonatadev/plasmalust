@@ -1,27 +1,63 @@
 #!/bin/bash
 
-# Find active wallpaper
-WALLPAPER=$(grep '^Image=' ~/.config/plasma-org.kde.plasma.desktop-appletsrc | tail -n 1 | cut -d'=' -f2-)
-WALLPAPER="${WALLPAPER#file://}"
+# Usage: set-theme [IMAGE]
+# With no argument, themes from the wallpaper Plasma currently has set.
 
-if [ -z "$WALLPAPER" ] || [ ! -f "$WALLPAPER" ]; then
-    WALLPAPER=$(grep -oE '/home/[^"]+\.(jpg|jpeg|png)' ~/.config/plasma-org.kde.plasma.desktop-appletsrc 2>/dev/null | tail -n 1)
+# Plasma's Image= value is either a plain image file or, for the wallpapers
+# a distro ships (e.g. Garuda's /usr/share/wallpapers/Mokka-tree), a KDE
+# wallpaper *package* directory holding several resolutions under
+# contents/images/ - resolve that to the largest image file.
+resolve_wallpaper() {
+    local path="${1#file://}"
+    path="${path//%20/ }"
+    if [ -d "$path" ]; then
+        path=$(find "$path/contents/images" "$path" -maxdepth 1 -type f \
+                    \( -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.png' -o -iname '*.webp' \) \
+                    -printf '%s %p\n' 2>/dev/null | sort -rn | head -n 1 | cut -d' ' -f2-)
+    fi
+    [ -n "$path" ] && [ -f "$path" ] && printf '%s\n' "$path"
+}
+
+APPLETSRC="$HOME/.config/plasma-org.kde.plasma.desktop-appletsrc"
+if [ -n "${1:-}" ]; then
+    WALLPAPER=$(resolve_wallpaper "$1")
+else
+    # Only the desktop's org.kde.image group counts - other wallpaper plugins
+    # (and the lock screen) keep their own stale Image= keys in the same file.
+    WALLPAPER=$(awk -F= '/^\[/{g=($0 ~ /\]\[Wallpaper\]\[org\.kde\.image\]\[General\]$/)} g && /^Image=/{v=substr($0,7)} END{print v}' "$APPLETSRC" 2>/dev/null)
+    WALLPAPER=$(resolve_wallpaper "$WALLPAPER")
 fi
 
-if [ -z "$WALLPAPER" ] || [ ! -f "$WALLPAPER" ]; then
+if [ -z "$WALLPAPER" ]; then
     echo "Error: Could not automatically detect active wallpaper path."
+    echo "Set a wallpaper image in Plasma first, or pass one: set-theme /path/to/image.jpg"
     exit 1
 fi
 
 echo "Detected active wallpaper: $WALLPAPER"
 
+# Staged for the sudo-run installers (GRUB/SDDM/plasmalogin), so they use
+# this same resolved path instead of re-parsing Plasma's config as root.
+mkdir -p "$HOME/.cache/wallust"
+printf '%s\n' "$WALLPAPER" >"$HOME/.cache/wallust/wallpaper-path"
+
 # 0. GRUB/SDDM (step 9 below) need sudo - ask up front instead of partway
 # through, so the whole run doesn't sit waiting on a password prompt you
 # might not be at the keyboard for. Declining just skips that step later;
-# everything else below still runs normally either way.
-PLASMALUST_REPO="$HOME/Projects/plasmalust"
-if [ -x "$PLASMALUST_REPO/grub-theme/install-grub-theme.sh" ] && [ -x "$PLASMALUST_REPO/sddm-theme/install-sddm.sh" ]; then
-    sudo -v
+# everything else below still runs normally either way. Skipped entirely
+# without a terminal (e.g. launched from the wallpaper picker widget) or
+# with PLASMALUST_NO_SUDO=1, since there's nobody to type a password.
+#
+# The repo is wherever this script really lives (install.sh symlinks it
+# into ~/.local/bin), falling back to the old fixed location for copies.
+PLASMALUST_REPO="$(dirname "$(readlink -f "$0")")"
+[ -d "$PLASMALUST_REPO/grub-theme" ] || PLASMALUST_REPO="$HOME/Projects/plasmalust"
+CAN_SUDO=0
+if [ -t 0 ] && [ "${PLASMALUST_NO_SUDO:-0}" != 1 ]; then
+    CAN_SUDO=1
+fi
+if [ "$CAN_SUDO" = 1 ] && [ -x "$PLASMALUST_REPO/grub-theme/install-grub-theme.sh" ]; then
+    sudo -v || CAN_SUDO=0
 fi
 
 # 1. Run Wallust with --no-cache
@@ -62,7 +98,7 @@ fi
 # Since accentColorFromWallpaper is off, nothing else keeps AccentColor in sync —
 # derive it ourselves from the same accent color GTK uses (color5), so the accent
 # highlight used across Plasma/System Settings matches the rest of the theme.
-ACCENT_HEX=$(grep -m1 '^color5' "$HOME/.config/kitty/theme.conf" | awk '{print $2}')
+ACCENT_HEX=$(grep -m1 '^color5' "$HOME/.config/kitty/current-theme.conf" | awk '{print $2}')
 if [ -n "$ACCENT_HEX" ]; then
     ACCENT_RGB=$(printf '%d,%d,%d' "0x${ACCENT_HEX:1:2}" "0x${ACCENT_HEX:3:2}" "0x${ACCENT_HEX:5:2}")
     kwriteconfig6 --file kdeglobals --group General --key AccentColor "$ACCENT_RGB"
@@ -89,7 +125,7 @@ find "$SCHEME_DIR" -maxdepth 1 -name 'Wallust-*.colors' ! -name "$SCHEME_NAME.co
 # the plasmalust-sysinfo desktop widget - an ordered-dither halftone reduces the
 # wallpaper to two tones, then remaps black/white to the current background/accent
 # hex so it always matches the active palette instead of being a static asset.
-BG_HEX=$(grep -m1 '^background' "$HOME/.config/kitty/theme.conf" | awk '{print $2}')
+BG_HEX=$(grep -m1 '^background' "$HOME/.config/kitty/current-theme.conf" | awk '{print $2}')
 if [ -n "$BG_HEX" ] && [ -n "$ACCENT_HEX" ] && command -v magick >/dev/null; then
     mkdir -p "$HOME/.cache/wallust"
     magick "$WALLPAPER" -resize 300x370^ -gravity center -extent 300x370 \
@@ -156,7 +192,8 @@ kwriteconfig6 --file kscreenlockerrc --group Greeter --group Wallpaper --group o
 # still needs to be actually selected as the active editor color scheme.
 # colors.scheme.xml is JetBrains' own XML format, not a KDE ini file, so
 # this is a targeted sed rather than kwriteconfig6.
-ANDROID_STUDIO_DIR="$HOME/.config/Google/AndroidStudio2026.1.3"
+# Newest installed version's config dir (JetBrains versions it per release).
+ANDROID_STUDIO_DIR=$(ls -d "$HOME"/.config/Google/AndroidStudio* 2>/dev/null | sort -V | tail -n 1)
 ANDROID_STUDIO_SCHEME_XML="$ANDROID_STUDIO_DIR/options/colors.scheme.xml"
 if [ -f "$ANDROID_STUDIO_DIR/colors/Wallust.icls" ] && [ -f "$ANDROID_STUDIO_SCHEME_XML" ]; then
     sed -i 's/global_color_scheme name="[^"]*"/global_color_scheme name="Wallust"/' "$ANDROID_STUDIO_SCHEME_XML"
@@ -263,9 +300,15 @@ case "$LOGIN_MANAGER" in
 esac
 
 if [ -x "$PLASMALUST_REPO/grub-theme/install-grub-theme.sh" ] && [ -n "$LOGIN_INSTALLER" ] && [ -x "$LOGIN_INSTALLER" ]; then
-    if sudo -v; then
+    if [ "$CAN_SUDO" = 1 ] && sudo -v; then
         sudo "$PLASMALUST_REPO/grub-theme/install-grub-theme.sh"
         sudo "$LOGIN_INSTALLER"
+        # Splash screen too, but only once it's actually been made the
+        # active one (install.sh / install-ksplash.sh did that) - its
+        # colors are a snapshot like SDDM's, so resync them here.
+        if [ "$(kreadconfig6 --file ksplashrc --group KSplash --key Theme)" = plasmalust.splash ]; then
+            sudo "$PLASMALUST_REPO/ksplash-theme/install-ksplash.sh" >/dev/null
+        fi
     else
         echo "Skipping GRUB/login manager (sudo not available) - desktop theme is still fully applied."
     fi
@@ -276,7 +319,7 @@ fi
 # the one piece of that which needs root, since papirus-folders re-symlinks
 # icons inside Papirus-Dark's system-owned directory).
 if [ -f "$ICONS_CURSORS_DIR/nearest-swatch.py" ] && [ -d /usr/share/icons/Papirus-Dark ] && command -v papirus-folders >/dev/null; then
-    if sudo -v; then
+    if [ "$CAN_SUDO" = 1 ] && sudo -v; then
         PAPIRUS_COLOR=$(python3 "$ICONS_CURSORS_DIR/nearest-swatch.py" papirus "$ACCENT_HEX" 2>/dev/null || true)
         [ -n "$PAPIRUS_COLOR" ] && sudo papirus-folders -C "$PAPIRUS_COLOR" --theme Papirus-Dark
     fi

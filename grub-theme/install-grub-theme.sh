@@ -31,6 +31,11 @@ THEME_DIR=/usr/share/grub/themes/plasmalust
 THEME_TXT="$THEME_DIR/theme.txt"
 BACKGROUND="$THEME_DIR/background.png"
 
+if [ ! -d "$SOURCE_DIR" ]; then
+    echo "Error: $SOURCE_DIR not found - it ships with Garuda's garuda-mokka package." >&2
+    exit 1
+fi
+
 mkdir -p "$THEME_DIR"
 
 # One-time copy of the static assets our theme.txt references by relative
@@ -59,10 +64,26 @@ cp "$STAGED" "$THEME_TXT"
 # scale a full-resolution photo at boot. Darkened the same way as the
 # plasmalogin greeter, for text legibility against a busy photo instead of
 # a flat color.
-WALLPAPER=$(sudo -u "$REAL_USER" grep '^Image=' "$REAL_HOME/.config/plasma-org.kde.plasma.desktop-appletsrc" | tail -n 1 | cut -d'=' -f2-)
-WALLPAPER="${WALLPAPER#file://}"
+#
+# Cropped to the connected display's native mode (first line of the DRM
+# connector's modes list) so its aspect ratio matches the real screen -
+# a fixed 16:9 crop got visibly stretched on 16:10 panels. theme.txt also
+# uses the "crop" scale method now, so a firmware that boots GRUB at some
+# other resolution still crops instead of distorting. 1920x1080 only as a
+# fallback when no connected connector reports a mode.
+#
+# The wallpaper path is the one set-theme already resolved (it handles
+# KDE wallpaper-package directories, not just plain files).
+WALLPAPER=$(cat "$REAL_HOME/.cache/wallust/wallpaper-path" 2>/dev/null || true)
+GRUB_RES=1920x1080
+for conn in /sys/class/drm/card*-*; do
+    if [ "$(cat "$conn/status" 2>/dev/null)" = connected ] && [ -s "$conn/modes" ]; then
+        GRUB_RES=$(head -n 1 "$conn/modes")
+        break
+    fi
+done
 if [ -n "$WALLPAPER" ] && [ -f "$WALLPAPER" ] && command -v magick >/dev/null; then
-    magick "$WALLPAPER" -resize 1920x1080^ -gravity center -extent 1920x1080 -colorize 35% "$BACKGROUND"
+    magick "$WALLPAPER" -resize "${GRUB_RES}^" -gravity center -extent "$GRUB_RES" -colorize 35% "$BACKGROUND"
 else
     echo "Warning: could not update GRUB background image, keeping the existing one." >&2
 fi
@@ -72,7 +93,11 @@ fi
 # change - unlike re-running this script normally, which never needs
 # grub-mkconfig since the path stays the same.
 if ! grep -q "^GRUB_THEME=\"$THEME_TXT\"" /etc/default/grub; then
-    sed -i "s|^GRUB_THEME=.*|GRUB_THEME=\"$THEME_TXT\"|" /etc/default/grub
+    if grep -q '^#\?GRUB_THEME=' /etc/default/grub; then
+        sed -i "s|^#\?GRUB_THEME=.*|GRUB_THEME=\"$THEME_TXT\"|" /etc/default/grub
+    else
+        echo "GRUB_THEME=\"$THEME_TXT\"" >> /etc/default/grub
+    fi
     echo "Updated GRUB_THEME in /etc/default/grub, regenerating grub.cfg..."
     grub-mkconfig -o /boot/grub/grub.cfg
 fi

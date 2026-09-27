@@ -100,7 +100,44 @@ first one, turned out to be the hard part:
 - Optional: GTK3/4, starship, btop, cava, conky, fastfetch, [Spicetify](https://spicetify.app/),
   Vesktop, vim/neovim, mpv, `bat`, `fzf`, Zen browser — only themed if installed/present
 
-## Setup
+## Quick install (fresh Garuda KDE)
+
+On a fresh **Garuda Linux KDE (Mokka)** install, one script does everything
+below - packages, removing the stock bits that conflict, configs, widgets,
+the panel/desktop layout, and GRUB/login/splash theming:
+
+```sh
+git clone https://github.com/sonatadev/plasmalust ~/Projects/plasmalust
+~/Projects/plasmalust/install.sh
+```
+
+Run it from a terminal inside the Plasma session (not a TTY or SSH), then
+log out and back in once. It asks before installing, removing, or replacing
+anything, backs up every file it replaces to
+`~/.config/plasmalust-backup-<time>/`, and is safe to re-run. Useful flags:
+
+- `--dry-run` - show every change without making any
+- `--only STEPS` / `--skip STEPS` - e.g. `--skip layout,system` to keep
+  your own panels and leave GRUB/login alone (`--help` lists the steps)
+- `--wallpapers DIR` - copy your wallpapers into `~/Pictures/wallpapers`
+  (otherwise it seeds it with Garuda's own)
+- `--icons` - also install Papirus icons + Bibata cursors
+
+What it removes: `konsole` and `alacritty` (kitty replaces them),
+`kwin-polonium` (a second tiling script that fights krohnkite) and
+`blesh-git` (conflicts with the stable `blesh` used here) - each only if
+installed, after asking.
+
+The panel + desktop widget layout comes from `layout/plasma-appletsrc` /
+`layout/plasmashellrc`, a snapshot of the author's desktop with the
+machine-specific bits (home path, activity id, wallpaper) turned into
+placeholders. Desktop widget positions are stored per screen resolution,
+so on import they're refitted to the target screen - one uniform scale
+factor and centered, so a different aspect ratio (16:10 -> 16:9, ultrawide)
+doesn't squash the columns into each other. Re-snapshot after changing
+your own layout with `python3 layout/export-layout.py`.
+
+## Manual setup
 
 1. Copy `wallust.toml` and `templates/` to `~/.config/wallust/`, editing the
    `target` paths to match your username and which of the optional templates
@@ -137,12 +174,11 @@ Re-run it any time you change your wallpaper.
   so `chrome/userChrome.css` gets loaded. Requires a browser restart to pick
   up new colors — Firefox-family browsers only read `userChrome.css` at
   startup.
-- **Android Studio**: the `wallust.toml` target paths (and the two
-  `ANDROID_STUDIO_*` variables near the bottom of `set-theme`) have your
-  Android Studio version baked in (e.g. `AndroidStudio2026.1.3`) since
-  JetBrains versions its config/plugin directories - adjust them to match
-  `~/.config/Google/` and `~/.local/share/Google/` on your machine, and
-  bump them after upgrading to a new major version. Two independent pieces:
+- **Android Studio**: JetBrains versions its config directories (e.g.
+  `AndroidStudio2026.1.4`). `set-theme` picks the newest one under
+  `~/.config/Google/` by itself; the `wallust.toml` target path has the
+  version in it, which `install.sh` fills in (re-run its `wallust` step
+  after upgrading Android Studio). Two independent pieces:
 
   1. **Editor color scheme** (syntax highlighting) - `templates/android-studio.icls`,
      inherits from Darcula. Some wallpapers produce a narrow-range palette
@@ -315,11 +351,12 @@ declined or unavailable, this step is skipped and everything else in the
 run - the actual desktop theme - is unaffected; it already finished before
 this point.
 
-This assumes the repo lives at `~/Projects/plasmalust` (see the
-`PLASMALUST_REPO` line near the bottom of `set-theme`) - adjust that path if
-you clone it somewhere else, or delete that whole block if you'd rather keep
-these as a manual, occasional step instead (see below for running them by
-hand).
+`set-theme` finds the repo through its own symlink (`install.sh` links
+`~/.local/bin/set-theme` to the repo copy), falling back to
+`~/Projects/plasmalust` for a plain copied script. The sudo steps only run
+when `set-theme` is started from a terminal - from the wallpaper picker
+widget or with `PLASMALUST_NO_SUDO=1` they're skipped, since there's nobody
+there to type a password.
 
 A broken login screen or boot menu is a worse day than a stale terminal
 theme, so every install script here is conservative: GRUB only changes

@@ -29,7 +29,7 @@ Rectangle {
     Image {
         anchors.fill: parent
         source: config.background ? config.background : ""
-        fillMode: Image.Stretch
+        fillMode: Image.PreserveAspectCrop
         visible: source !== ""
     }
 

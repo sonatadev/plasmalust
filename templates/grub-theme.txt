@@ -17,7 +17,7 @@
 terminal-font: "HackNerdFontMonoBold16"
 title-text: ""
 desktop-image: "background.png"
-desktop-image-scale-method: "stretch"
+desktop-image-scale-method: "crop"
 desktop-color: "{{background}}"
 terminal-left: "0"
 terminal-top: "0"

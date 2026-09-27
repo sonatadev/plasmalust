@@ -42,10 +42,9 @@ cp "$SCRIPT_DIR/Main.qml" "$THEME_DIR/Main.qml"
 cp "$SCRIPT_DIR/metadata.desktop" "$THEME_DIR/metadata.desktop"
 cp "$STAGED_CONF" "$THEME_DIR/theme.conf"
 
-# Reuse the same wallpaper-detection logic as set-theme, but reading the
-# real user's config, not root's.
-WALLPAPER=$(sudo -u "$REAL_USER" grep '^Image=' "$REAL_HOME/.config/plasma-org.kde.plasma.desktop-appletsrc" | tail -n 1 | cut -d'=' -f2-)
-WALLPAPER="${WALLPAPER#file://}"
+# The wallpaper path set-theme already resolved (handles KDE
+# wallpaper-package directories, not just plain files).
+WALLPAPER=$(cat "$REAL_HOME/.cache/wallust/wallpaper-path" 2>/dev/null || true)
 if [ -n "$WALLPAPER" ] && [ -f "$WALLPAPER" ]; then
     cp "$WALLPAPER" "$THEME_DIR/background.png"
 else

@@ -32,17 +32,35 @@
 #   pick up the current wallpaper's accent. This is the fix for that.
 set -euo pipefail
 
-kwriteconfig6 --file plasma-org.kde.plasma.desktop-appletsrc \
-    --group Containments --group 33 --group Applets --group 34 --group Configuration --group General \
-    --key icon "$HOME/.cache/wallust/panel-logo.png"
+# Containment/applet ids are assigned per install, so look each widget up
+# by its plugin name instead of hardcoding one machine's ids. Prints
+# "<containment> <applet>" for the first top-level panel applet matching.
+APPLETSRC="$HOME/.config/plasma-org.kde.plasma.desktop-appletsrc"
+find_applet() {
+    awk -v want="$1" '
+        match($0, /^\[Containments\]\[[0-9]+\]\[Applets\]\[[0-9]+\]$/) { split($0, p, /[][]+/); c = p[3]; a = p[5]; next }
+        /^\[/ { c = "" }
+        c != "" && $0 == "plugin=" want { print c, a; exit }
+    ' "$APPLETSRC"
+}
 
-kwriteconfig6 --file plasma-org.kde.plasma.desktop-appletsrc \
-    --group Containments --group 33 --group Applets --group 54 --group Configuration --group General \
-    --key showFace false
+if read -r C A < <(find_applet org.kde.plasma.kickoff); then
+    kwriteconfig6 --file plasma-org.kde.plasma.desktop-appletsrc \
+        --group Containments --group "$C" --group Applets --group "$A" --group Configuration --group General \
+        --key icon "$HOME/.cache/wallust/panel-logo.png"
+fi
 
-kwriteconfig6 --file plasma-org.kde.plasma.desktop-appletsrc \
-    --group Containments --group 33 --group Applets --group 41 --group General \
-    --key hiddenItems "plasmashell_microphone,Garuda System Maintenance"
+if read -r C A < <(find_applet org.kde.plasma.userswitcher); then
+    kwriteconfig6 --file plasma-org.kde.plasma.desktop-appletsrc \
+        --group Containments --group "$C" --group Applets --group "$A" --group Configuration --group General \
+        --key showFace false
+fi
+
+if read -r C A < <(find_applet org.kde.plasma.systemtray); then
+    kwriteconfig6 --file plasma-org.kde.plasma.desktop-appletsrc \
+        --group Containments --group "$C" --group Applets --group "$A" --group General \
+        --key hiddenItems "plasmashell_microphone,Garuda System Maintenance"
+fi
 
 kwriteconfig6 --file plasmarc --group Theme --key name breeze-dark
 
