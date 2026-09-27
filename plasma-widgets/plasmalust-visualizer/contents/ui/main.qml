@@ -35,88 +35,102 @@ PlasmoidItem {
         onTriggered: root.refresh()
     }
 
-    Canvas {
-        id: frame
-        anchors.fill: parent
-        onPaint: {
-            const ctx = getContext("2d");
-            ctx.reset();
-            const accent = Kirigami.Theme.highlightColor;
-            const bg = Kirigami.Theme.backgroundColor;
-            const m = 6, fl = 16;
-
-            ctx.shadowColor = Qt.rgba(accent.r, accent.g, accent.b, 0.55);
-            ctx.shadowBlur = 10;
-
-            ctx.fillStyle = Qt.rgba(bg.r, bg.g, bg.b, 0.72);
-            ctx.strokeStyle = Qt.rgba(accent.r, accent.g, accent.b, 0.6);
-            ctx.lineWidth = 1.2;
-            ctx.fillRect(m, m, width - 2 * m, height - 2 * m);
-            ctx.strokeRect(m, m, width - 2 * m, height - 2 * m);
-
-            ctx.strokeStyle = accent;
-            ctx.lineWidth = 2;
-            function corner(x, y, dx, dy) {
-                ctx.beginPath();
-                ctx.moveTo(x, y + dy * fl);
-                ctx.lineTo(x, y);
-                ctx.lineTo(x + dx * fl, y);
-                ctx.stroke();
-
-                ctx.beginPath();
-                ctx.arc(x, y + dy * fl, 2.5, 0, Math.PI * 2);
-                ctx.stroke();
-                ctx.beginPath();
-                ctx.arc(x + dx * fl, y, 2.5, 0, Math.PI * 2);
-                ctx.stroke();
-
-                const s = 8, cx = x + dx * s, cy = y + dy * s;
-                ctx.beginPath();
-                ctx.moveTo(cx, cy - 3.5);
-                ctx.lineTo(cx + 3.5, cy);
-                ctx.lineTo(cx, cy + 3.5);
-                ctx.lineTo(cx - 3.5, cy);
-                ctx.closePath();
-                ctx.fillStyle = accent;
-                ctx.fill();
-
-                ctx.beginPath();
-                ctx.arc(x + dx * 3, y + dy * 3, 1.8, 0, Math.PI * 2);
-                ctx.fillStyle = accent;
-                ctx.fill();
-            }
-            corner(m, m, 1, 1);
-            corner(width - m, m, -1, 1);
-            corner(m, height - m, 1, -1);
-            corner(width - m, height - m, -1, -1);
-        }
-    }
-
     Connections {
         target: Kirigami.Theme
         function onHighlightColorChanged() { frame.requestPaint(); }
         function onBackgroundColorChanged() { frame.requestPaint(); }
     }
 
-    RowLayout {
-        anchors.fill: parent
-        anchors.margins: 22
-        spacing: 4
-        clip: true
+    // Everything visible lives in here, laid out at (at least) the
+    // widget's design size and scaled down uniformly when the widget is
+    // placed smaller than that (e.g. a layout imported onto a smaller
+    // screen) - fonts are fixed pixel sizes, so without this text spills
+    // out of the frame instead of shrinking with it. Never scales up.
+    Item {
+        id: plasmalustScaler
+        readonly property real s: Math.min(1, root.width / 460, root.height / 140)
+        width: root.width / s
+        height: root.height / s
+        scale: s
+        transformOrigin: Item.TopLeft
 
-        Repeater {
-            model: root.bars.length
-            delegate: Rectangle {
-                required property int index
-                Layout.fillWidth: true
-                Layout.alignment: Qt.AlignBottom
-                Layout.preferredHeight: Math.max(3, (root.bars[index] / 100) * parent.height)
-                radius: 1
-                color: Kirigami.Theme.highlightColor
-                opacity: 0.55 + 0.45 * (root.bars[index] / 100)
+        Canvas {
+            id: frame
+            anchors.fill: parent
+            onPaint: {
+                const ctx = getContext("2d");
+                ctx.reset();
+                const accent = Kirigami.Theme.highlightColor;
+                const bg = Kirigami.Theme.backgroundColor;
+                const m = 6, fl = 16;
 
-                Behavior on Layout.preferredHeight {
-                    NumberAnimation { duration: 80; easing.type: Easing.OutQuad }
+                ctx.shadowColor = Qt.rgba(accent.r, accent.g, accent.b, 0.55);
+                ctx.shadowBlur = 10;
+
+                ctx.fillStyle = Qt.rgba(bg.r, bg.g, bg.b, 0.72);
+                ctx.strokeStyle = Qt.rgba(accent.r, accent.g, accent.b, 0.6);
+                ctx.lineWidth = 1.2;
+                ctx.fillRect(m, m, width - 2 * m, height - 2 * m);
+                ctx.strokeRect(m, m, width - 2 * m, height - 2 * m);
+
+                ctx.strokeStyle = accent;
+                ctx.lineWidth = 2;
+                function corner(x, y, dx, dy) {
+                    ctx.beginPath();
+                    ctx.moveTo(x, y + dy * fl);
+                    ctx.lineTo(x, y);
+                    ctx.lineTo(x + dx * fl, y);
+                    ctx.stroke();
+
+                    ctx.beginPath();
+                    ctx.arc(x, y + dy * fl, 2.5, 0, Math.PI * 2);
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.arc(x + dx * fl, y, 2.5, 0, Math.PI * 2);
+                    ctx.stroke();
+
+                    const s = 8, cx = x + dx * s, cy = y + dy * s;
+                    ctx.beginPath();
+                    ctx.moveTo(cx, cy - 3.5);
+                    ctx.lineTo(cx + 3.5, cy);
+                    ctx.lineTo(cx, cy + 3.5);
+                    ctx.lineTo(cx - 3.5, cy);
+                    ctx.closePath();
+                    ctx.fillStyle = accent;
+                    ctx.fill();
+
+                    ctx.beginPath();
+                    ctx.arc(x + dx * 3, y + dy * 3, 1.8, 0, Math.PI * 2);
+                    ctx.fillStyle = accent;
+                    ctx.fill();
+                }
+                corner(m, m, 1, 1);
+                corner(width - m, m, -1, 1);
+                corner(m, height - m, 1, -1);
+                corner(width - m, height - m, -1, -1);
+            }
+        }
+
+        RowLayout {
+            anchors.fill: parent
+            anchors.margins: 22
+            spacing: 4
+            clip: true
+
+            Repeater {
+                model: root.bars.length
+                delegate: Rectangle {
+                    required property int index
+                    Layout.fillWidth: true
+                    Layout.alignment: Qt.AlignBottom
+                    Layout.preferredHeight: Math.max(3, (root.bars[index] / 100) * parent.height)
+                    radius: 1
+                    color: Kirigami.Theme.highlightColor
+                    opacity: 0.55 + 0.45 * (root.bars[index] / 100)
+
+                    Behavior on Layout.preferredHeight {
+                        NumberAnimation { duration: 80; easing.type: Easing.OutQuad }
+                    }
                 }
             }
         }

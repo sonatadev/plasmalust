@@ -18,8 +18,13 @@ esac
 
 [ -f /usr/share/blesh/ble.sh ] && source /usr/share/blesh/ble.sh --noattach
 
-# fzf key bindings (Ctrl+R history, Ctrl+T file, Alt+C cd) + completion
-[ -f /usr/share/fzf/key-bindings.bash ] && source /usr/share/fzf/key-bindings.bash
+# fzf key bindings (Ctrl+R history, Ctrl+T file, Alt+C cd) + completion.
+# Minus fzf's three "\C-z: emacs/vi-editing-mode" lines - a vi-mode toggle
+# trick that stable ble.sh (0.3.4) doesn't support, so it printed
+# "ble.sh (bind): unsupported readline function" on every new shell. ble.sh
+# writes those through its own saved copy of stderr, so filtering stderr
+# afterwards can't hide them; not binding them in the first place does.
+[ -f /usr/share/fzf/key-bindings.bash ] && source <(grep -v 'editing-mode' /usr/share/fzf/key-bindings.bash)
 [ -f /usr/share/fzf/completion.bash ] && source /usr/share/fzf/completion.bash
 
 # wallust-generated fzf / eza colors
@@ -51,10 +56,5 @@ if command -v fastfetch &> /dev/null; then
     fi
 fi
 
-# ble.sh: attach last. Stable blesh 0.3.4 warns (from a deferred task, so
-# the filter has to stay on) about two compiled-in readline defaults it
-# doesn't implement - harmless, just noise.
-if [[ ${BLE_VERSION-} ]]; then
-    exec 2> >(grep -v "ble.sh (bind): unsupported readline function '\(emacs\|vi\)-editing-mode'\." >&2)
-    ble-attach
-fi
+# ble.sh: attach last, after everything above has set up its bindings.
+[[ ${BLE_VERSION-} ]] && ble-attach

@@ -86,127 +86,141 @@ PlasmoidItem {
         onTriggered: root.poll()
     }
 
-    Canvas {
-        id: frame
-        anchors.fill: parent
-        onPaint: {
-            const ctx = getContext("2d");
-            ctx.reset();
-            const accent = Kirigami.Theme.highlightColor;
-            const bg = Kirigami.Theme.backgroundColor;
-            const m = 6, fl = 18;
-
-            ctx.shadowColor = Qt.rgba(accent.r, accent.g, accent.b, 0.55);
-            ctx.shadowBlur = 10;
-
-            ctx.fillStyle = Qt.rgba(bg.r, bg.g, bg.b, 0.78);
-            ctx.strokeStyle = Qt.rgba(accent.r, accent.g, accent.b, 0.6);
-            ctx.lineWidth = 1.2;
-            ctx.fillRect(m, m, width - 2 * m, height - 2 * m);
-            ctx.strokeRect(m, m, width - 2 * m, height - 2 * m);
-
-            ctx.strokeStyle = accent;
-            ctx.lineWidth = 2;
-            function corner(x, y, dx, dy) {
-                ctx.beginPath();
-                ctx.moveTo(x, y + dy * fl);
-                ctx.lineTo(x, y);
-                ctx.lineTo(x + dx * fl, y);
-                ctx.stroke();
-
-                ctx.beginPath();
-                ctx.arc(x, y + dy * fl, 2.5, 0, Math.PI * 2);
-                ctx.stroke();
-                ctx.beginPath();
-                ctx.arc(x + dx * fl, y, 2.5, 0, Math.PI * 2);
-                ctx.stroke();
-
-                const s = 8, cx = x + dx * s, cy = y + dy * s;
-                ctx.beginPath();
-                ctx.moveTo(cx, cy - 3.5);
-                ctx.lineTo(cx + 3.5, cy);
-                ctx.lineTo(cx, cy + 3.5);
-                ctx.lineTo(cx - 3.5, cy);
-                ctx.closePath();
-                ctx.fillStyle = accent;
-                ctx.fill();
-
-                ctx.beginPath();
-                ctx.arc(x + dx * 3, y + dy * 3, 1.8, 0, Math.PI * 2);
-                ctx.fillStyle = accent;
-                ctx.fill();
-            }
-            corner(m, m, 1, 1);
-            corner(width - m, m, -1, 1);
-            corner(m, height - m, 1, -1);
-            corner(width - m, height - m, -1, -1);
-        }
-    }
-
     Connections {
         target: Kirigami.Theme
         function onHighlightColorChanged() { frame.requestPaint(); }
         function onBackgroundColorChanged() { frame.requestPaint(); }
     }
 
-    ColumnLayout {
-        anchors.fill: parent
-        anchors.margins: 20
-        spacing: 10
+    // Everything visible lives in here, laid out at (at least) the
+    // widget's design size and scaled down uniformly when the widget is
+    // placed smaller than that (e.g. a layout imported onto a smaller
+    // screen) - fonts are fixed pixel sizes, so without this text spills
+    // out of the frame instead of shrinking with it. Never scales up.
+    Item {
+        id: plasmalustScaler
+        readonly property real s: Math.min(1, root.width / 320, root.height / 210)
+        width: root.width / s
+        height: root.height / s
+        scale: s
+        transformOrigin: Item.TopLeft
 
-        Text {
-            text: root.iface ? ("network  ·  " + root.iface) : "network"
-            font.family: "monospace"
-            font.pixelSize: 13
-            font.bold: true
-            color: Kirigami.Theme.textColor
+        Canvas {
+            id: frame
+            anchors.fill: parent
+            onPaint: {
+                const ctx = getContext("2d");
+                ctx.reset();
+                const accent = Kirigami.Theme.highlightColor;
+                const bg = Kirigami.Theme.backgroundColor;
+                const m = 6, fl = 18;
+
+                ctx.shadowColor = Qt.rgba(accent.r, accent.g, accent.b, 0.55);
+                ctx.shadowBlur = 10;
+
+                ctx.fillStyle = Qt.rgba(bg.r, bg.g, bg.b, 0.78);
+                ctx.strokeStyle = Qt.rgba(accent.r, accent.g, accent.b, 0.6);
+                ctx.lineWidth = 1.2;
+                ctx.fillRect(m, m, width - 2 * m, height - 2 * m);
+                ctx.strokeRect(m, m, width - 2 * m, height - 2 * m);
+
+                ctx.strokeStyle = accent;
+                ctx.lineWidth = 2;
+                function corner(x, y, dx, dy) {
+                    ctx.beginPath();
+                    ctx.moveTo(x, y + dy * fl);
+                    ctx.lineTo(x, y);
+                    ctx.lineTo(x + dx * fl, y);
+                    ctx.stroke();
+
+                    ctx.beginPath();
+                    ctx.arc(x, y + dy * fl, 2.5, 0, Math.PI * 2);
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.arc(x + dx * fl, y, 2.5, 0, Math.PI * 2);
+                    ctx.stroke();
+
+                    const s = 8, cx = x + dx * s, cy = y + dy * s;
+                    ctx.beginPath();
+                    ctx.moveTo(cx, cy - 3.5);
+                    ctx.lineTo(cx + 3.5, cy);
+                    ctx.lineTo(cx, cy + 3.5);
+                    ctx.lineTo(cx - 3.5, cy);
+                    ctx.closePath();
+                    ctx.fillStyle = accent;
+                    ctx.fill();
+
+                    ctx.beginPath();
+                    ctx.arc(x + dx * 3, y + dy * 3, 1.8, 0, Math.PI * 2);
+                    ctx.fillStyle = accent;
+                    ctx.fill();
+                }
+                corner(m, m, 1, 1);
+                corner(width - m, m, -1, 1);
+                corner(m, height - m, 1, -1);
+                corner(width - m, height - m, -1, -1);
+            }
         }
-        Rectangle {
-            Layout.fillWidth: true
-            Layout.preferredHeight: 1
-            Layout.bottomMargin: 2
-            color: Qt.rgba(Kirigami.Theme.highlightColor.r, Kirigami.Theme.highlightColor.g, Kirigami.Theme.highlightColor.b, 0.4)
+
+        ColumnLayout {
+            anchors.fill: parent
+            anchors.margins: 20
+            spacing: 10
+
+            Text {
+                text: root.iface ? ("network  ·  " + root.iface) : "network"
+                font.family: "monospace"
+                font.pixelSize: 13
+                font.bold: true
+                color: Kirigami.Theme.textColor
+            }
+            Rectangle {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 1
+                Layout.bottomMargin: 2
+                color: Qt.rgba(Kirigami.Theme.highlightColor.r, Kirigami.Theme.highlightColor.g, Kirigami.Theme.highlightColor.b, 0.4)
+            }
+
+            GridLayout {
+                Layout.fillWidth: true
+                columns: 2
+                rowSpacing: 6
+                columnSpacing: 18
+
+                Text { text: "down"; font.family: "monospace"; font.pixelSize: 11; font.bold: true; color: Kirigami.Theme.highlightColor }
+                Text { text: "up"; font.family: "monospace"; font.pixelSize: 11; font.bold: true; color: Kirigami.Theme.highlightColor }
+                Text { text: root.downSpeed; font.family: "monospace"; font.pixelSize: 16; color: Kirigami.Theme.textColor }
+                Text { text: root.upSpeed; font.family: "monospace"; font.pixelSize: 16; color: Kirigami.Theme.textColor }
+            }
+
+            Text {
+                Layout.topMargin: 6
+                text: root.disk ? ("disk  ·  " + root.disk) : "disk"
+                font.family: "monospace"
+                font.pixelSize: 13
+                font.bold: true
+                color: Kirigami.Theme.textColor
+            }
+            Rectangle {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 1
+                Layout.bottomMargin: 2
+                color: Qt.rgba(Kirigami.Theme.highlightColor.r, Kirigami.Theme.highlightColor.g, Kirigami.Theme.highlightColor.b, 0.4)
+            }
+
+            GridLayout {
+                Layout.fillWidth: true
+                columns: 2
+                rowSpacing: 6
+                columnSpacing: 18
+
+                Text { text: "read"; font.family: "monospace"; font.pixelSize: 11; font.bold: true; color: Kirigami.Theme.highlightColor }
+                Text { text: "write"; font.family: "monospace"; font.pixelSize: 11; font.bold: true; color: Kirigami.Theme.highlightColor }
+                Text { text: root.readSpeed; font.family: "monospace"; font.pixelSize: 16; color: Kirigami.Theme.textColor }
+                Text { text: root.writeSpeed; font.family: "monospace"; font.pixelSize: 16; color: Kirigami.Theme.textColor }
+            }
+
+            Item { Layout.fillHeight: true }
         }
-
-        GridLayout {
-            Layout.fillWidth: true
-            columns: 2
-            rowSpacing: 6
-            columnSpacing: 18
-
-            Text { text: "down"; font.family: "monospace"; font.pixelSize: 11; font.bold: true; color: Kirigami.Theme.highlightColor }
-            Text { text: "up"; font.family: "monospace"; font.pixelSize: 11; font.bold: true; color: Kirigami.Theme.highlightColor }
-            Text { text: root.downSpeed; font.family: "monospace"; font.pixelSize: 16; color: Kirigami.Theme.textColor }
-            Text { text: root.upSpeed; font.family: "monospace"; font.pixelSize: 16; color: Kirigami.Theme.textColor }
-        }
-
-        Text {
-            Layout.topMargin: 6
-            text: root.disk ? ("disk  ·  " + root.disk) : "disk"
-            font.family: "monospace"
-            font.pixelSize: 13
-            font.bold: true
-            color: Kirigami.Theme.textColor
-        }
-        Rectangle {
-            Layout.fillWidth: true
-            Layout.preferredHeight: 1
-            Layout.bottomMargin: 2
-            color: Qt.rgba(Kirigami.Theme.highlightColor.r, Kirigami.Theme.highlightColor.g, Kirigami.Theme.highlightColor.b, 0.4)
-        }
-
-        GridLayout {
-            Layout.fillWidth: true
-            columns: 2
-            rowSpacing: 6
-            columnSpacing: 18
-
-            Text { text: "read"; font.family: "monospace"; font.pixelSize: 11; font.bold: true; color: Kirigami.Theme.highlightColor }
-            Text { text: "write"; font.family: "monospace"; font.pixelSize: 11; font.bold: true; color: Kirigami.Theme.highlightColor }
-            Text { text: root.readSpeed; font.family: "monospace"; font.pixelSize: 16; color: Kirigami.Theme.textColor }
-            Text { text: root.writeSpeed; font.family: "monospace"; font.pixelSize: 16; color: Kirigami.Theme.textColor }
-        }
-
-        Item { Layout.fillHeight: true }
     }
 }

@@ -72,177 +72,191 @@ PlasmoidItem {
         onTriggered: root.refresh()
     }
 
-    Canvas {
-        id: frame
-        anchors.fill: parent
-        onPaint: {
-            const ctx = getContext("2d");
-            ctx.reset();
-            const accent = Kirigami.Theme.highlightColor;
-            const bg = Kirigami.Theme.backgroundColor;
-            const m = 6, fl = 18;
-
-            ctx.shadowColor = Qt.rgba(accent.r, accent.g, accent.b, 0.55);
-            ctx.shadowBlur = 10;
-
-            ctx.fillStyle = Qt.rgba(bg.r, bg.g, bg.b, 0.72);
-            ctx.strokeStyle = Qt.rgba(accent.r, accent.g, accent.b, 0.6);
-            ctx.lineWidth = 1.2;
-            ctx.fillRect(m, m, width - 2 * m, height - 2 * m);
-            ctx.strokeRect(m, m, width - 2 * m, height - 2 * m);
-
-            ctx.strokeStyle = accent;
-            ctx.lineWidth = 2;
-            function corner(x, y, dx, dy) {
-                ctx.beginPath();
-                ctx.moveTo(x, y + dy * fl);
-                ctx.lineTo(x, y);
-                ctx.lineTo(x + dx * fl, y);
-                ctx.stroke();
-
-                ctx.beginPath();
-                ctx.arc(x, y + dy * fl, 2.5, 0, Math.PI * 2);
-                ctx.stroke();
-                ctx.beginPath();
-                ctx.arc(x + dx * fl, y, 2.5, 0, Math.PI * 2);
-                ctx.stroke();
-
-                const s = 8, cx = x + dx * s, cy = y + dy * s;
-                ctx.beginPath();
-                ctx.moveTo(cx, cy - 3.5);
-                ctx.lineTo(cx + 3.5, cy);
-                ctx.lineTo(cx, cy + 3.5);
-                ctx.lineTo(cx - 3.5, cy);
-                ctx.closePath();
-                ctx.fillStyle = accent;
-                ctx.fill();
-
-                ctx.beginPath();
-                ctx.arc(x + dx * 3, y + dy * 3, 1.8, 0, Math.PI * 2);
-                ctx.fillStyle = accent;
-                ctx.fill();
-            }
-            corner(m, m, 1, 1);
-            corner(width - m, m, -1, 1);
-            corner(m, height - m, 1, -1);
-            corner(width - m, height - m, -1, -1);
-        }
-    }
-
     Connections {
         target: Kirigami.Theme
         function onHighlightColorChanged() { frame.requestPaint(); }
         function onBackgroundColorChanged() { frame.requestPaint(); }
     }
 
-    RowLayout {
-        anchors.fill: parent
-        anchors.margins: 24
-        spacing: 16
-        clip: true
+    // Everything visible lives in here, laid out at (at least) the
+    // widget's design size and scaled down uniformly when the widget is
+    // placed smaller than that (e.g. a layout imported onto a smaller
+    // screen) - fonts are fixed pixel sizes, so without this text spills
+    // out of the frame instead of shrinking with it. Never scales up.
+    Item {
+        id: plasmalustScaler
+        readonly property real s: Math.min(1, root.width / 460, root.height / 190)
+        width: root.width / s
+        height: root.height / s
+        scale: s
+        transformOrigin: Item.TopLeft
 
-        Rectangle {
-            Layout.preferredWidth: 130
-            Layout.preferredHeight: 130
-            Layout.alignment: Qt.AlignVCenter
-            border.color: Kirigami.Theme.highlightColor
-            border.width: 1
-            color: "transparent"
+        Canvas {
+            id: frame
+            anchors.fill: parent
+            onPaint: {
+                const ctx = getContext("2d");
+                ctx.reset();
+                const accent = Kirigami.Theme.highlightColor;
+                const bg = Kirigami.Theme.backgroundColor;
+                const m = 6, fl = 18;
 
-            Image {
-                anchors.fill: parent
-                anchors.margins: 3
-                fillMode: Image.PreserveAspectCrop
-                source: root.artUrl
-                visible: root.hasPlayer && root.artUrl !== ""
-                asynchronous: true
-            }
+                ctx.shadowColor = Qt.rgba(accent.r, accent.g, accent.b, 0.55);
+                ctx.shadowBlur = 10;
 
-            Text {
-                anchors.centerIn: parent
-                visible: !root.hasPlayer || root.artUrl === ""
-                text: "♫"
-                font.pixelSize: 40
-                color: Kirigami.Theme.highlightColor
+                ctx.fillStyle = Qt.rgba(bg.r, bg.g, bg.b, 0.72);
+                ctx.strokeStyle = Qt.rgba(accent.r, accent.g, accent.b, 0.6);
+                ctx.lineWidth = 1.2;
+                ctx.fillRect(m, m, width - 2 * m, height - 2 * m);
+                ctx.strokeRect(m, m, width - 2 * m, height - 2 * m);
+
+                ctx.strokeStyle = accent;
+                ctx.lineWidth = 2;
+                function corner(x, y, dx, dy) {
+                    ctx.beginPath();
+                    ctx.moveTo(x, y + dy * fl);
+                    ctx.lineTo(x, y);
+                    ctx.lineTo(x + dx * fl, y);
+                    ctx.stroke();
+
+                    ctx.beginPath();
+                    ctx.arc(x, y + dy * fl, 2.5, 0, Math.PI * 2);
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.arc(x + dx * fl, y, 2.5, 0, Math.PI * 2);
+                    ctx.stroke();
+
+                    const s = 8, cx = x + dx * s, cy = y + dy * s;
+                    ctx.beginPath();
+                    ctx.moveTo(cx, cy - 3.5);
+                    ctx.lineTo(cx + 3.5, cy);
+                    ctx.lineTo(cx, cy + 3.5);
+                    ctx.lineTo(cx - 3.5, cy);
+                    ctx.closePath();
+                    ctx.fillStyle = accent;
+                    ctx.fill();
+
+                    ctx.beginPath();
+                    ctx.arc(x + dx * 3, y + dy * 3, 1.8, 0, Math.PI * 2);
+                    ctx.fillStyle = accent;
+                    ctx.fill();
+                }
+                corner(m, m, 1, 1);
+                corner(width - m, m, -1, 1);
+                corner(m, height - m, 1, -1);
+                corner(width - m, height - m, -1, -1);
             }
         }
 
-        ColumnLayout {
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            Layout.alignment: Qt.AlignVCenter
-            spacing: 6
+        RowLayout {
+            anchors.fill: parent
+            anchors.margins: 24
+            spacing: 16
+            clip: true
 
-            Text {
-                Layout.fillWidth: true
-                text: root.hasPlayer ? root.trackTitle : "nothing playing"
-                font.family: "monospace"
-                font.pixelSize: 15
-                font.bold: true
-                color: Kirigami.Theme.textColor
-                elide: Text.ElideRight
-            }
-            Text {
-                Layout.fillWidth: true
-                visible: root.hasPlayer
-                text: root.trackArtist + (root.trackAlbum ? "  ·  " + root.trackAlbum : "")
-                font.family: "monospace"
-                font.pixelSize: 12
-                color: Kirigami.Theme.highlightColor
-                elide: Text.ElideRight
-            }
+            Rectangle {
+                Layout.preferredWidth: 130
+                Layout.preferredHeight: 130
+                Layout.alignment: Qt.AlignVCenter
+                border.color: Kirigami.Theme.highlightColor
+                border.width: 1
+                color: "transparent"
 
-            Item { Layout.preferredHeight: 4 }
+                Image {
+                    anchors.fill: parent
+                    anchors.margins: 3
+                    fillMode: Image.PreserveAspectCrop
+                    source: root.artUrl
+                    visible: root.hasPlayer && root.artUrl !== ""
+                    asynchronous: true
+                }
 
-            MeterBar {
-                Layout.fillWidth: true
-                visible: root.hasPlayer
-                segments: 24
-                value: root.lengthUs > 0 ? (root.positionUs / root.lengthUs * 100) : 0
-            }
-
-            RowLayout {
-                Layout.fillWidth: true
-                visible: root.hasPlayer
                 Text {
-                    text: root.fmtTime(root.positionUs)
-                    font.family: "monospace"
-                    font.pixelSize: 10
-                    color: Kirigami.Theme.textColor
-                }
-                Item { Layout.fillWidth: true }
-                Text {
-                    text: root.fmtTime(root.lengthUs)
-                    font.family: "monospace"
-                    font.pixelSize: 10
-                    color: Kirigami.Theme.textColor
+                    anchors.centerIn: parent
+                    visible: !root.hasPlayer || root.artUrl === ""
+                    text: "♫"
+                    font.pixelSize: 40
+                    color: Kirigami.Theme.highlightColor
                 }
             }
 
-            RowLayout {
+            ColumnLayout {
                 Layout.fillWidth: true
-                Layout.topMargin: 4
-                spacing: 18
+                Layout.fillHeight: true
+                Layout.alignment: Qt.AlignVCenter
+                spacing: 6
 
-                Item { Layout.fillWidth: true }
+                Text {
+                    Layout.fillWidth: true
+                    text: root.hasPlayer ? root.trackTitle : "nothing playing"
+                    font.family: "monospace"
+                    font.pixelSize: 15
+                    font.bold: true
+                    color: Kirigami.Theme.textColor
+                    elide: Text.ElideRight
+                }
+                Text {
+                    Layout.fillWidth: true
+                    visible: root.hasPlayer
+                    text: root.trackArtist + (root.trackAlbum ? "  ·  " + root.trackAlbum : "")
+                    font.family: "monospace"
+                    font.pixelSize: 12
+                    color: Kirigami.Theme.highlightColor
+                    elide: Text.ElideRight
+                }
 
-                TransportButton {
-                    kind: "previous"
-                    iconColor: Kirigami.Theme.textColor
-                    onClicked: root.control("previous")
-                }
-                TransportButton {
-                    kind: root.playbackStatus === "Playing" ? "pause" : "play"
-                    iconColor: Kirigami.Theme.highlightColor
-                    onClicked: root.control("play-pause")
-                }
-                TransportButton {
-                    kind: "next"
-                    iconColor: Kirigami.Theme.textColor
-                    onClicked: root.control("next")
+                Item { Layout.preferredHeight: 4 }
+
+                MeterBar {
+                    Layout.fillWidth: true
+                    visible: root.hasPlayer
+                    segments: 24
+                    value: root.lengthUs > 0 ? (root.positionUs / root.lengthUs * 100) : 0
                 }
 
-                Item { Layout.fillWidth: true }
+                RowLayout {
+                    Layout.fillWidth: true
+                    visible: root.hasPlayer
+                    Text {
+                        text: root.fmtTime(root.positionUs)
+                        font.family: "monospace"
+                        font.pixelSize: 10
+                        color: Kirigami.Theme.textColor
+                    }
+                    Item { Layout.fillWidth: true }
+                    Text {
+                        text: root.fmtTime(root.lengthUs)
+                        font.family: "monospace"
+                        font.pixelSize: 10
+                        color: Kirigami.Theme.textColor
+                    }
+                }
+
+                RowLayout {
+                    Layout.fillWidth: true
+                    Layout.topMargin: 4
+                    spacing: 18
+
+                    Item { Layout.fillWidth: true }
+
+                    TransportButton {
+                        kind: "previous"
+                        iconColor: Kirigami.Theme.textColor
+                        onClicked: root.control("previous")
+                    }
+                    TransportButton {
+                        kind: root.playbackStatus === "Playing" ? "pause" : "play"
+                        iconColor: Kirigami.Theme.highlightColor
+                        onClicked: root.control("play-pause")
+                    }
+                    TransportButton {
+                        kind: "next"
+                        iconColor: Kirigami.Theme.textColor
+                        onClicked: root.control("next")
+                    }
+
+                    Item { Layout.fillWidth: true }
+                }
             }
         }
     }

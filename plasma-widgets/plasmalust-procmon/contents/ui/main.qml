@@ -44,119 +44,133 @@ PlasmoidItem {
         onTriggered: root.refresh()
     }
 
-    Canvas {
-        id: frame
-        anchors.fill: parent
-        onPaint: {
-            const ctx = getContext("2d");
-            ctx.reset();
-            const accent = Kirigami.Theme.highlightColor;
-            const bg = Kirigami.Theme.backgroundColor;
-            const m = 6, fl = 18;
-
-            ctx.shadowColor = Qt.rgba(accent.r, accent.g, accent.b, 0.55);
-            ctx.shadowBlur = 10;
-
-            ctx.fillStyle = Qt.rgba(bg.r, bg.g, bg.b, 0.72);
-            ctx.strokeStyle = Qt.rgba(accent.r, accent.g, accent.b, 0.6);
-            ctx.lineWidth = 1.2;
-            ctx.fillRect(m, m, width - 2 * m, height - 2 * m);
-            ctx.strokeRect(m, m, width - 2 * m, height - 2 * m);
-
-            ctx.strokeStyle = accent;
-            ctx.lineWidth = 2;
-            function corner(x, y, dx, dy) {
-                ctx.beginPath();
-                ctx.moveTo(x, y + dy * fl);
-                ctx.lineTo(x, y);
-                ctx.lineTo(x + dx * fl, y);
-                ctx.stroke();
-
-                ctx.beginPath();
-                ctx.arc(x, y + dy * fl, 2.5, 0, Math.PI * 2);
-                ctx.stroke();
-                ctx.beginPath();
-                ctx.arc(x + dx * fl, y, 2.5, 0, Math.PI * 2);
-                ctx.stroke();
-
-                const s = 8, cx = x + dx * s, cy = y + dy * s;
-                ctx.beginPath();
-                ctx.moveTo(cx, cy - 3.5);
-                ctx.lineTo(cx + 3.5, cy);
-                ctx.lineTo(cx, cy + 3.5);
-                ctx.lineTo(cx - 3.5, cy);
-                ctx.closePath();
-                ctx.fillStyle = accent;
-                ctx.fill();
-
-                ctx.beginPath();
-                ctx.arc(x + dx * 3, y + dy * 3, 1.8, 0, Math.PI * 2);
-                ctx.fillStyle = accent;
-                ctx.fill();
-            }
-            corner(m, m, 1, 1);
-            corner(width - m, m, -1, 1);
-            corner(m, height - m, 1, -1);
-            corner(width - m, height - m, -1, -1);
-        }
-    }
-
     Connections {
         target: Kirigami.Theme
         function onHighlightColorChanged() { frame.requestPaint(); }
         function onBackgroundColorChanged() { frame.requestPaint(); }
     }
 
-    ColumnLayout {
-        anchors.fill: parent
-        anchors.margins: 24
-        spacing: 4
-        clip: true
+    // Everything visible lives in here, laid out at (at least) the
+    // widget's design size and scaled down uniformly when the widget is
+    // placed smaller than that (e.g. a layout imported onto a smaller
+    // screen) - fonts are fixed pixel sizes, so without this text spills
+    // out of the frame instead of shrinking with it. Never scales up.
+    Item {
+        id: plasmalustScaler
+        readonly property real s: Math.min(1, root.width / 460, root.height / 300)
+        width: root.width / s
+        height: root.height / s
+        scale: s
+        transformOrigin: Item.TopLeft
 
-        Text {
-            text: "processes"
-            font.family: "monospace"
-            font.pixelSize: 15
-            font.bold: true
-            color: Kirigami.Theme.textColor
-        }
-        Rectangle {
-            Layout.fillWidth: true
-            Layout.preferredHeight: 1
-            Layout.bottomMargin: 4
-            color: Qt.rgba(Kirigami.Theme.highlightColor.r, Kirigami.Theme.highlightColor.g, Kirigami.Theme.highlightColor.b, 0.5)
-        }
+        Canvas {
+            id: frame
+            anchors.fill: parent
+            onPaint: {
+                const ctx = getContext("2d");
+                ctx.reset();
+                const accent = Kirigami.Theme.highlightColor;
+                const bg = Kirigami.Theme.backgroundColor;
+                const m = 6, fl = 18;
 
-        RowLayout {
-            Layout.fillWidth: true
-            Text { text: "pid"; Layout.preferredWidth: 55; font.family: "monospace"; font.pixelSize: 10; font.bold: true; color: Kirigami.Theme.highlightColor }
-            Text { text: "name"; Layout.fillWidth: true; font.family: "monospace"; font.pixelSize: 10; font.bold: true; color: Kirigami.Theme.highlightColor }
-            Text { text: "user"; Layout.preferredWidth: 65; font.family: "monospace"; font.pixelSize: 10; font.bold: true; color: Kirigami.Theme.highlightColor }
-            Text { text: "mem%"; Layout.preferredWidth: 45; horizontalAlignment: Text.AlignRight; font.family: "monospace"; font.pixelSize: 10; font.bold: true; color: Kirigami.Theme.highlightColor }
-            Text { text: "cpu%"; Layout.preferredWidth: 45; horizontalAlignment: Text.AlignRight; font.family: "monospace"; font.pixelSize: 10; font.bold: true; color: Kirigami.Theme.highlightColor }
-        }
+                ctx.shadowColor = Qt.rgba(accent.r, accent.g, accent.b, 0.55);
+                ctx.shadowBlur = 10;
 
-        Repeater {
-            model: root.procs
-            delegate: RowLayout {
-                required property var modelData
-                Layout.fillWidth: true
-                Text { text: modelData.pid; Layout.preferredWidth: 55; font.family: "monospace"; font.pixelSize: 11; color: Kirigami.Theme.textColor }
-                Text { text: modelData.name; Layout.fillWidth: true; elide: Text.ElideRight; font.family: "monospace"; font.pixelSize: 11; color: Kirigami.Theme.textColor }
-                Text { text: modelData.user; Layout.preferredWidth: 65; elide: Text.ElideRight; font.family: "monospace"; font.pixelSize: 11; color: Kirigami.Theme.textColor }
-                Text { text: modelData.mem; Layout.preferredWidth: 45; horizontalAlignment: Text.AlignRight; font.family: "monospace"; font.pixelSize: 11; color: Kirigami.Theme.textColor }
-                Text {
-                    text: modelData.cpu
-                    Layout.preferredWidth: 45
-                    horizontalAlignment: Text.AlignRight
-                    font.family: "monospace"
-                    font.pixelSize: 11
-                    font.bold: parseFloat(modelData.cpu) >= 20
-                    color: parseFloat(modelData.cpu) >= 20 ? Kirigami.Theme.highlightColor : Kirigami.Theme.textColor
+                ctx.fillStyle = Qt.rgba(bg.r, bg.g, bg.b, 0.72);
+                ctx.strokeStyle = Qt.rgba(accent.r, accent.g, accent.b, 0.6);
+                ctx.lineWidth = 1.2;
+                ctx.fillRect(m, m, width - 2 * m, height - 2 * m);
+                ctx.strokeRect(m, m, width - 2 * m, height - 2 * m);
+
+                ctx.strokeStyle = accent;
+                ctx.lineWidth = 2;
+                function corner(x, y, dx, dy) {
+                    ctx.beginPath();
+                    ctx.moveTo(x, y + dy * fl);
+                    ctx.lineTo(x, y);
+                    ctx.lineTo(x + dx * fl, y);
+                    ctx.stroke();
+
+                    ctx.beginPath();
+                    ctx.arc(x, y + dy * fl, 2.5, 0, Math.PI * 2);
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.arc(x + dx * fl, y, 2.5, 0, Math.PI * 2);
+                    ctx.stroke();
+
+                    const s = 8, cx = x + dx * s, cy = y + dy * s;
+                    ctx.beginPath();
+                    ctx.moveTo(cx, cy - 3.5);
+                    ctx.lineTo(cx + 3.5, cy);
+                    ctx.lineTo(cx, cy + 3.5);
+                    ctx.lineTo(cx - 3.5, cy);
+                    ctx.closePath();
+                    ctx.fillStyle = accent;
+                    ctx.fill();
+
+                    ctx.beginPath();
+                    ctx.arc(x + dx * 3, y + dy * 3, 1.8, 0, Math.PI * 2);
+                    ctx.fillStyle = accent;
+                    ctx.fill();
                 }
+                corner(m, m, 1, 1);
+                corner(width - m, m, -1, 1);
+                corner(m, height - m, 1, -1);
+                corner(width - m, height - m, -1, -1);
             }
         }
 
-        Item { Layout.fillHeight: true }
+        ColumnLayout {
+            anchors.fill: parent
+            anchors.margins: 24
+            spacing: 4
+            clip: true
+
+            Text {
+                text: "processes"
+                font.family: "monospace"
+                font.pixelSize: 15
+                font.bold: true
+                color: Kirigami.Theme.textColor
+            }
+            Rectangle {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 1
+                Layout.bottomMargin: 4
+                color: Qt.rgba(Kirigami.Theme.highlightColor.r, Kirigami.Theme.highlightColor.g, Kirigami.Theme.highlightColor.b, 0.5)
+            }
+
+            RowLayout {
+                Layout.fillWidth: true
+                Text { text: "pid"; Layout.preferredWidth: 55; font.family: "monospace"; font.pixelSize: 10; font.bold: true; color: Kirigami.Theme.highlightColor }
+                Text { text: "name"; Layout.fillWidth: true; font.family: "monospace"; font.pixelSize: 10; font.bold: true; color: Kirigami.Theme.highlightColor }
+                Text { text: "user"; Layout.preferredWidth: 65; font.family: "monospace"; font.pixelSize: 10; font.bold: true; color: Kirigami.Theme.highlightColor }
+                Text { text: "mem%"; Layout.preferredWidth: 45; horizontalAlignment: Text.AlignRight; font.family: "monospace"; font.pixelSize: 10; font.bold: true; color: Kirigami.Theme.highlightColor }
+                Text { text: "cpu%"; Layout.preferredWidth: 45; horizontalAlignment: Text.AlignRight; font.family: "monospace"; font.pixelSize: 10; font.bold: true; color: Kirigami.Theme.highlightColor }
+            }
+
+            Repeater {
+                model: root.procs
+                delegate: RowLayout {
+                    required property var modelData
+                    Layout.fillWidth: true
+                    Text { text: modelData.pid; Layout.preferredWidth: 55; font.family: "monospace"; font.pixelSize: 11; color: Kirigami.Theme.textColor }
+                    Text { text: modelData.name; Layout.fillWidth: true; elide: Text.ElideRight; font.family: "monospace"; font.pixelSize: 11; color: Kirigami.Theme.textColor }
+                    Text { text: modelData.user; Layout.preferredWidth: 65; elide: Text.ElideRight; font.family: "monospace"; font.pixelSize: 11; color: Kirigami.Theme.textColor }
+                    Text { text: modelData.mem; Layout.preferredWidth: 45; horizontalAlignment: Text.AlignRight; font.family: "monospace"; font.pixelSize: 11; color: Kirigami.Theme.textColor }
+                    Text {
+                        text: modelData.cpu
+                        Layout.preferredWidth: 45
+                        horizontalAlignment: Text.AlignRight
+                        font.family: "monospace"
+                        font.pixelSize: 11
+                        font.bold: parseFloat(modelData.cpu) >= 20
+                        color: parseFloat(modelData.cpu) >= 20 ? Kirigami.Theme.highlightColor : Kirigami.Theme.textColor
+                    }
+                }
+            }
+
+            Item { Layout.fillHeight: true }
+        }
     }
 }

@@ -74,146 +74,160 @@ PlasmoidItem {
         onTriggered: root.refresh()
     }
 
-    Canvas {
-        id: frame
-        anchors.fill: parent
-        onPaint: {
-            const ctx = getContext("2d");
-            ctx.reset();
-            const accent = Kirigami.Theme.highlightColor;
-            const bg = Kirigami.Theme.backgroundColor;
-            const m = 6, fl = 18;
-
-            ctx.shadowColor = Qt.rgba(accent.r, accent.g, accent.b, 0.55);
-            ctx.shadowBlur = 10;
-
-            ctx.fillStyle = Qt.rgba(bg.r, bg.g, bg.b, 0.72);
-            ctx.strokeStyle = Qt.rgba(accent.r, accent.g, accent.b, 0.6);
-            ctx.lineWidth = 1.2;
-            ctx.fillRect(m, m, width - 2 * m, height - 2 * m);
-            ctx.strokeRect(m, m, width - 2 * m, height - 2 * m);
-
-            ctx.strokeStyle = accent;
-            ctx.lineWidth = 2;
-
-            function corner(x, y, dx, dy) {
-                ctx.beginPath();
-                ctx.moveTo(x, y + dy * fl);
-                ctx.lineTo(x, y);
-                ctx.lineTo(x + dx * fl, y);
-                ctx.stroke();
-
-                ctx.beginPath();
-                ctx.arc(x, y + dy * fl, 2.5, 0, Math.PI * 2);
-                ctx.stroke();
-                ctx.beginPath();
-                ctx.arc(x + dx * fl, y, 2.5, 0, Math.PI * 2);
-                ctx.stroke();
-
-                const s = 8, cx = x + dx * s, cy = y + dy * s;
-                ctx.beginPath();
-                ctx.moveTo(cx, cy - 3.5);
-                ctx.lineTo(cx + 3.5, cy);
-                ctx.lineTo(cx, cy + 3.5);
-                ctx.lineTo(cx - 3.5, cy);
-                ctx.closePath();
-                ctx.fillStyle = accent;
-                ctx.fill();
-
-                ctx.beginPath();
-                ctx.arc(x + dx * 3, y + dy * 3, 1.8, 0, Math.PI * 2);
-                ctx.fillStyle = accent;
-                ctx.fill();
-            }
-            corner(m, m, 1, 1);
-            corner(width - m, m, -1, 1);
-            corner(m, height - m, 1, -1);
-            corner(width - m, height - m, -1, -1);
-        }
-    }
-
     Connections {
         target: Kirigami.Theme
         function onHighlightColorChanged() { frame.requestPaint(); }
         function onBackgroundColorChanged() { frame.requestPaint(); }
     }
 
-    RowLayout {
-        anchors.fill: parent
-        anchors.margins: 26
-        spacing: 16
-        clip: true
+    // Everything visible lives in here, laid out at (at least) the
+    // widget's design size and scaled down uniformly when the widget is
+    // placed smaller than that (e.g. a layout imported onto a smaller
+    // screen) - fonts are fixed pixel sizes, so without this text spills
+    // out of the frame instead of shrinking with it. Never scales up.
+    Item {
+        id: plasmalustScaler
+        readonly property real s: Math.min(1, root.width / 496, root.height / 360)
+        width: root.width / s
+        height: root.height / s
+        scale: s
+        transformOrigin: Item.TopLeft
 
-        Rectangle {
-            Layout.preferredWidth: 195
-            Layout.preferredHeight: 240
-            Layout.alignment: Qt.AlignTop
-            border.color: Kirigami.Theme.highlightColor
-            border.width: 1
-            color: "transparent"
+        Canvas {
+            id: frame
+            anchors.fill: parent
+            onPaint: {
+                const ctx = getContext("2d");
+                ctx.reset();
+                const accent = Kirigami.Theme.highlightColor;
+                const bg = Kirigami.Theme.backgroundColor;
+                const m = 6, fl = 18;
 
-            Image {
-                anchors.fill: parent
-                anchors.margins: 3
-                fillMode: Image.PreserveAspectCrop
-                source: "file:///home/YOUR_USERNAME/.cache/wallust/portrait-dither.png?" + root.reloadTick
-                cache: false
-                asynchronous: true
+                ctx.shadowColor = Qt.rgba(accent.r, accent.g, accent.b, 0.55);
+                ctx.shadowBlur = 10;
+
+                ctx.fillStyle = Qt.rgba(bg.r, bg.g, bg.b, 0.72);
+                ctx.strokeStyle = Qt.rgba(accent.r, accent.g, accent.b, 0.6);
+                ctx.lineWidth = 1.2;
+                ctx.fillRect(m, m, width - 2 * m, height - 2 * m);
+                ctx.strokeRect(m, m, width - 2 * m, height - 2 * m);
+
+                ctx.strokeStyle = accent;
+                ctx.lineWidth = 2;
+
+                function corner(x, y, dx, dy) {
+                    ctx.beginPath();
+                    ctx.moveTo(x, y + dy * fl);
+                    ctx.lineTo(x, y);
+                    ctx.lineTo(x + dx * fl, y);
+                    ctx.stroke();
+
+                    ctx.beginPath();
+                    ctx.arc(x, y + dy * fl, 2.5, 0, Math.PI * 2);
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.arc(x + dx * fl, y, 2.5, 0, Math.PI * 2);
+                    ctx.stroke();
+
+                    const s = 8, cx = x + dx * s, cy = y + dy * s;
+                    ctx.beginPath();
+                    ctx.moveTo(cx, cy - 3.5);
+                    ctx.lineTo(cx + 3.5, cy);
+                    ctx.lineTo(cx, cy + 3.5);
+                    ctx.lineTo(cx - 3.5, cy);
+                    ctx.closePath();
+                    ctx.fillStyle = accent;
+                    ctx.fill();
+
+                    ctx.beginPath();
+                    ctx.arc(x + dx * 3, y + dy * 3, 1.8, 0, Math.PI * 2);
+                    ctx.fillStyle = accent;
+                    ctx.fill();
+                }
+                corner(m, m, 1, 1);
+                corner(width - m, m, -1, 1);
+                corner(m, height - m, 1, -1);
+                corner(width - m, height - m, -1, -1);
             }
         }
 
-        ColumnLayout {
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            spacing: 6
+        RowLayout {
+            anchors.fill: parent
+            anchors.margins: 26
+            spacing: 16
+            clip: true
 
-            Text {
-                text: root.osName || "..."
-                font.family: "monospace"
-                font.pixelSize: 15
-                font.bold: true
-                color: Kirigami.Theme.textColor
-            }
             Rectangle {
-                Layout.fillWidth: true
-                Layout.preferredHeight: 1
-                color: Qt.rgba(Kirigami.Theme.highlightColor.r, Kirigami.Theme.highlightColor.g, Kirigami.Theme.highlightColor.b, 0.5)
+                Layout.preferredWidth: 195
+                Layout.preferredHeight: 240
+                Layout.alignment: Qt.AlignTop
+                border.color: Kirigami.Theme.highlightColor
+                border.width: 1
+                color: "transparent"
+
+                Image {
+                    anchors.fill: parent
+                    anchors.margins: 3
+                    fillMode: Image.PreserveAspectCrop
+                    source: "file:///home/YOUR_USERNAME/.cache/wallust/portrait-dither.png?" + root.reloadTick
+                    cache: false
+                    asynchronous: true
+                }
             }
-
-            InfoRow { label: "kernel"; value: root.kernel }
-            InfoRow { label: "wm"; value: root.wm }
-            InfoRow { label: "shell"; value: root.shell }
-            InfoRow { label: "uptime"; value: root.uptime }
-
-            Item { Layout.preferredHeight: 4 }
 
             ColumnLayout {
                 Layout.fillWidth: true
-                spacing: 5
-                RowLayout {
-                    Layout.fillWidth: true
-                    Text { text: "cpu"; font.family: "monospace"; font.pixelSize: 11; font.bold: true; color: Kirigami.Theme.highlightColor; Layout.preferredWidth: 40 }
-                    MeterBar { value: root.cpuPct; Layout.fillWidth: true }
-                }
-                RowLayout {
-                    Layout.fillWidth: true
-                    Text { text: "mem"; font.family: "monospace"; font.pixelSize: 11; font.bold: true; color: Kirigami.Theme.highlightColor; Layout.preferredWidth: 40 }
-                    MeterBar { value: root.memPct; Layout.fillWidth: true }
-                }
-                RowLayout {
-                    Layout.fillWidth: true
-                    Text { text: "disk"; font.family: "monospace"; font.pixelSize: 11; font.bold: true; color: Kirigami.Theme.highlightColor; Layout.preferredWidth: 40 }
-                    MeterBar { value: root.diskPct; Layout.fillWidth: true }
-                }
-                RowLayout {
-                    Layout.fillWidth: true
-                    visible: root.batPct >= 0
-                    Text { text: "batt"; font.family: "monospace"; font.pixelSize: 11; font.bold: true; color: Kirigami.Theme.highlightColor; Layout.preferredWidth: 40 }
-                    MeterBar { value: root.batPct; Layout.fillWidth: true }
-                }
-            }
+                Layout.fillHeight: true
+                spacing: 6
 
-            Item { Layout.fillHeight: true }
+                Text {
+                    text: root.osName || "..."
+                    font.family: "monospace"
+                    font.pixelSize: 15
+                    font.bold: true
+                    color: Kirigami.Theme.textColor
+                }
+                Rectangle {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 1
+                    color: Qt.rgba(Kirigami.Theme.highlightColor.r, Kirigami.Theme.highlightColor.g, Kirigami.Theme.highlightColor.b, 0.5)
+                }
+
+                InfoRow { label: "kernel"; value: root.kernel }
+                InfoRow { label: "wm"; value: root.wm }
+                InfoRow { label: "shell"; value: root.shell }
+                InfoRow { label: "uptime"; value: root.uptime }
+
+                Item { Layout.preferredHeight: 4 }
+
+                ColumnLayout {
+                    Layout.fillWidth: true
+                    spacing: 5
+                    RowLayout {
+                        Layout.fillWidth: true
+                        Text { text: "cpu"; font.family: "monospace"; font.pixelSize: 11; font.bold: true; color: Kirigami.Theme.highlightColor; Layout.preferredWidth: 40 }
+                        MeterBar { value: root.cpuPct; Layout.fillWidth: true }
+                    }
+                    RowLayout {
+                        Layout.fillWidth: true
+                        Text { text: "mem"; font.family: "monospace"; font.pixelSize: 11; font.bold: true; color: Kirigami.Theme.highlightColor; Layout.preferredWidth: 40 }
+                        MeterBar { value: root.memPct; Layout.fillWidth: true }
+                    }
+                    RowLayout {
+                        Layout.fillWidth: true
+                        Text { text: "disk"; font.family: "monospace"; font.pixelSize: 11; font.bold: true; color: Kirigami.Theme.highlightColor; Layout.preferredWidth: 40 }
+                        MeterBar { value: root.diskPct; Layout.fillWidth: true }
+                    }
+                    RowLayout {
+                        Layout.fillWidth: true
+                        visible: root.batPct >= 0
+                        Text { text: "batt"; font.family: "monospace"; font.pixelSize: 11; font.bold: true; color: Kirigami.Theme.highlightColor; Layout.preferredWidth: 40 }
+                        MeterBar { value: root.batPct; Layout.fillWidth: true }
+                    }
+                }
+
+                Item { Layout.fillHeight: true }
+            }
         }
     }
 }

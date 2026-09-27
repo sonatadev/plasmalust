@@ -48,164 +48,178 @@ PlasmoidItem {
         onTriggered: root.today = new Date()
     }
 
-    Canvas {
-        id: frame
-        anchors.fill: parent
-        onPaint: {
-            const ctx = getContext("2d");
-            ctx.reset();
-            const accent = Kirigami.Theme.highlightColor;
-            const bg = Kirigami.Theme.backgroundColor;
-            const m = 6, fl = 18;
-
-            ctx.shadowColor = Qt.rgba(accent.r, accent.g, accent.b, 0.55);
-            ctx.shadowBlur = 10;
-
-            ctx.fillStyle = Qt.rgba(bg.r, bg.g, bg.b, 0.78);
-            ctx.strokeStyle = Qt.rgba(accent.r, accent.g, accent.b, 0.6);
-            ctx.lineWidth = 1.2;
-            ctx.fillRect(m, m, width - 2 * m, height - 2 * m);
-            ctx.strokeRect(m, m, width - 2 * m, height - 2 * m);
-
-            ctx.strokeStyle = accent;
-            ctx.lineWidth = 2;
-            function corner(x, y, dx, dy) {
-                ctx.beginPath();
-                ctx.moveTo(x, y + dy * fl);
-                ctx.lineTo(x, y);
-                ctx.lineTo(x + dx * fl, y);
-                ctx.stroke();
-
-                ctx.beginPath();
-                ctx.arc(x, y + dy * fl, 2.5, 0, Math.PI * 2);
-                ctx.stroke();
-                ctx.beginPath();
-                ctx.arc(x + dx * fl, y, 2.5, 0, Math.PI * 2);
-                ctx.stroke();
-
-                const s = 8, cx = x + dx * s, cy = y + dy * s;
-                ctx.beginPath();
-                ctx.moveTo(cx, cy - 3.5);
-                ctx.lineTo(cx + 3.5, cy);
-                ctx.lineTo(cx, cy + 3.5);
-                ctx.lineTo(cx - 3.5, cy);
-                ctx.closePath();
-                ctx.fillStyle = accent;
-                ctx.fill();
-
-                ctx.beginPath();
-                ctx.arc(x + dx * 3, y + dy * 3, 1.8, 0, Math.PI * 2);
-                ctx.fillStyle = accent;
-                ctx.fill();
-            }
-            corner(m, m, 1, 1);
-            corner(width - m, m, -1, 1);
-            corner(m, height - m, 1, -1);
-            corner(width - m, height - m, -1, -1);
-        }
-    }
-
     Connections {
         target: Kirigami.Theme
         function onHighlightColorChanged() { frame.requestPaint(); }
         function onBackgroundColorChanged() { frame.requestPaint(); }
     }
 
-    ColumnLayout {
-        anchors.fill: parent
-        anchors.margins: 20
-        spacing: 8
+    // Everything visible lives in here, laid out at (at least) the
+    // widget's design size and scaled down uniformly when the widget is
+    // placed smaller than that (e.g. a layout imported onto a smaller
+    // screen) - fonts are fixed pixel sizes, so without this text spills
+    // out of the frame instead of shrinking with it. Never scales up.
+    Item {
+        id: plasmalustScaler
+        readonly property real s: Math.min(1, root.width / 320, root.height / 320)
+        width: root.width / s
+        height: root.height / s
+        scale: s
+        transformOrigin: Item.TopLeft
 
-        RowLayout {
-            Layout.fillWidth: true
+        Canvas {
+            id: frame
+            anchors.fill: parent
+            onPaint: {
+                const ctx = getContext("2d");
+                ctx.reset();
+                const accent = Kirigami.Theme.highlightColor;
+                const bg = Kirigami.Theme.backgroundColor;
+                const m = 6, fl = 18;
 
-            Text {
-                text: "‹"
-                font.pixelSize: 18
-                font.bold: true
-                color: Kirigami.Theme.highlightColor
-                MouseArea { anchors.fill: parent; anchors.margins: -6; cursorShape: Qt.PointingHandCursor; onClicked: root.prevMonth() }
-            }
-            Item { Layout.fillWidth: true }
-            Text {
-                text: root.monthNames[root.viewMonth] + " " + root.viewYear
-                font.family: "monospace"
-                font.pixelSize: 15
-                font.bold: true
-                color: Kirigami.Theme.textColor
-            }
-            Item { Layout.fillWidth: true }
-            Text {
-                text: "›"
-                font.pixelSize: 18
-                font.bold: true
-                color: Kirigami.Theme.highlightColor
-                MouseArea { anchors.fill: parent; anchors.margins: -6; cursorShape: Qt.PointingHandCursor; onClicked: root.nextMonth() }
+                ctx.shadowColor = Qt.rgba(accent.r, accent.g, accent.b, 0.55);
+                ctx.shadowBlur = 10;
+
+                ctx.fillStyle = Qt.rgba(bg.r, bg.g, bg.b, 0.78);
+                ctx.strokeStyle = Qt.rgba(accent.r, accent.g, accent.b, 0.6);
+                ctx.lineWidth = 1.2;
+                ctx.fillRect(m, m, width - 2 * m, height - 2 * m);
+                ctx.strokeRect(m, m, width - 2 * m, height - 2 * m);
+
+                ctx.strokeStyle = accent;
+                ctx.lineWidth = 2;
+                function corner(x, y, dx, dy) {
+                    ctx.beginPath();
+                    ctx.moveTo(x, y + dy * fl);
+                    ctx.lineTo(x, y);
+                    ctx.lineTo(x + dx * fl, y);
+                    ctx.stroke();
+
+                    ctx.beginPath();
+                    ctx.arc(x, y + dy * fl, 2.5, 0, Math.PI * 2);
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.arc(x + dx * fl, y, 2.5, 0, Math.PI * 2);
+                    ctx.stroke();
+
+                    const s = 8, cx = x + dx * s, cy = y + dy * s;
+                    ctx.beginPath();
+                    ctx.moveTo(cx, cy - 3.5);
+                    ctx.lineTo(cx + 3.5, cy);
+                    ctx.lineTo(cx, cy + 3.5);
+                    ctx.lineTo(cx - 3.5, cy);
+                    ctx.closePath();
+                    ctx.fillStyle = accent;
+                    ctx.fill();
+
+                    ctx.beginPath();
+                    ctx.arc(x + dx * 3, y + dy * 3, 1.8, 0, Math.PI * 2);
+                    ctx.fillStyle = accent;
+                    ctx.fill();
+                }
+                corner(m, m, 1, 1);
+                corner(width - m, m, -1, 1);
+                corner(m, height - m, 1, -1);
+                corner(width - m, height - m, -1, -1);
             }
         }
 
-        Rectangle {
-            Layout.fillWidth: true
-            Layout.preferredHeight: 1
-            color: Qt.rgba(Kirigami.Theme.highlightColor.r, Kirigami.Theme.highlightColor.g, Kirigami.Theme.highlightColor.b, 0.4)
-        }
+        ColumnLayout {
+            anchors.fill: parent
+            anchors.margins: 20
+            spacing: 8
 
-        GridLayout {
-            Layout.fillWidth: true
-            columns: 7
-            rowSpacing: 4
-            columnSpacing: 2
+            RowLayout {
+                Layout.fillWidth: true
 
-            Repeater {
-                model: root.dayLetters
-                delegate: Text {
-                    required property string modelData
-                    Layout.alignment: Qt.AlignHCenter
-                    Layout.fillWidth: true
-                    horizontalAlignment: Text.AlignHCenter
-                    text: modelData
-                    font.family: "monospace"
-                    font.pixelSize: 11
+                Text {
+                    text: "‹"
+                    font.pixelSize: 18
                     font.bold: true
                     color: Kirigami.Theme.highlightColor
+                    MouseArea { anchors.fill: parent; anchors.margins: -6; cursorShape: Qt.PointingHandCursor; onClicked: root.prevMonth() }
+                }
+                Item { Layout.fillWidth: true }
+                Text {
+                    text: root.monthNames[root.viewMonth] + " " + root.viewYear
+                    font.family: "monospace"
+                    font.pixelSize: 15
+                    font.bold: true
+                    color: Kirigami.Theme.textColor
+                }
+                Item { Layout.fillWidth: true }
+                Text {
+                    text: "›"
+                    font.pixelSize: 18
+                    font.bold: true
+                    color: Kirigami.Theme.highlightColor
+                    MouseArea { anchors.fill: parent; anchors.margins: -6; cursorShape: Qt.PointingHandCursor; onClicked: root.nextMonth() }
                 }
             }
-        }
 
-        GridLayout {
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            columns: 7
-            rowSpacing: 2
-            columnSpacing: 2
+            Rectangle {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 1
+                color: Qt.rgba(Kirigami.Theme.highlightColor.r, Kirigami.Theme.highlightColor.g, Kirigami.Theme.highlightColor.b, 0.4)
+            }
 
-            Repeater {
-                model: root.cells
-                delegate: Item {
-                    id: cell
-                    required property var modelData
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
+            GridLayout {
+                Layout.fillWidth: true
+                columns: 7
+                rowSpacing: 4
+                columnSpacing: 2
 
-                    Rectangle {
-                        anchors.centerIn: parent
-                        width: 24
-                        height: 24
-                        radius: 12
-                        visible: cell.modelData !== null
-                        color: root.isToday(cell.modelData)
-                            ? Kirigami.Theme.highlightColor
-                            : "transparent"
+                Repeater {
+                    model: root.dayLetters
+                    delegate: Text {
+                        required property string modelData
+                        Layout.alignment: Qt.AlignHCenter
+                        Layout.fillWidth: true
+                        horizontalAlignment: Text.AlignHCenter
+                        text: modelData
+                        font.family: "monospace"
+                        font.pixelSize: 11
+                        font.bold: true
+                        color: Kirigami.Theme.highlightColor
+                    }
+                }
+            }
 
-                        Text {
+            GridLayout {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                columns: 7
+                rowSpacing: 2
+                columnSpacing: 2
+
+                Repeater {
+                    model: root.cells
+                    delegate: Item {
+                        id: cell
+                        required property var modelData
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+
+                        Rectangle {
                             anchors.centerIn: parent
-                            text: cell.modelData || ""
-                            font.family: "monospace"
-                            font.pixelSize: 12
-                            font.bold: root.isToday(cell.modelData)
+                            width: 24
+                            height: 24
+                            radius: 12
+                            visible: cell.modelData !== null
                             color: root.isToday(cell.modelData)
-                                ? Kirigami.Theme.backgroundColor
-                                : Kirigami.Theme.textColor
+                                ? Kirigami.Theme.highlightColor
+                                : "transparent"
+
+                            Text {
+                                anchors.centerIn: parent
+                                text: cell.modelData || ""
+                                font.family: "monospace"
+                                font.pixelSize: 12
+                                font.bold: root.isToday(cell.modelData)
+                                color: root.isToday(cell.modelData)
+                                    ? Kirigami.Theme.backgroundColor
+                                    : Kirigami.Theme.textColor
+                            }
                         }
                     }
                 }
